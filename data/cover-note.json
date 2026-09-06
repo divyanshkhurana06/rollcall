@@ -1,0 +1,23 @@
+{
+  "address": null,
+  "txHash": "0x76ede609d62e3644a16a74a60113b6d2200a292168a688a7c5faea5a75a1b518",
+  "issuer": "0xE339E3E12df4B8Cb04cc42D30E7898dE0475b33B",
+  "factory": "0xc4028832d0b086e52a8771c39da08529fd3e0d3c",
+  "target": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+  "reportDigest": "0x68d886d29a5e094fe29e2ea03d541bdc",
+  "threshold": 3,
+  "owners": 8,
+  "honestQuorum": 2,
+  "startingDate": 1788706260,
+  "maturityDate": 1820242260,
+  "info": {
+    "product": "rollcall.cover-note.v1",
+    "target": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+    "threshold": 3,
+    "owners": 8,
+    "honestQuorum": 2,
+    "reportDigest": "0x68d886d29a5e094fe29e2ea03d541bdc",
+    "hcsTopic": "0.0.10392885",
+    "underwrittenAt": 1788706140
+  }
+}

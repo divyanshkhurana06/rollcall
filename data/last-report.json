@@ -1,0 +1,983 @@
+{
+  "report": {
+    "target": {
+      "address": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+      "chain": "ethereum"
+    },
+    "header": {
+      "methodVersion": "1.0.0",
+      "generatedAt": "2026-09-06T14:48:46.048Z",
+      "chainsSearched": [
+        "ethereum"
+      ],
+      "txWindow": {
+        "count": 100,
+        "firstAt": 1787285867,
+        "lastAt": 1788595283
+      },
+      "sources": [
+        "safe-transaction-service",
+        "rpc-archive-nonce",
+        "rpc-state",
+        "the-graph-gateway (3 standardized deployments)"
+      ],
+      "seed": 42,
+      "permutations": {
+        "independence": 2000,
+        "timing": 2000
+      },
+      "inputDigest": "0x68d886d29a5e094fe29e2ea03d541bdc"
+    },
+    "observed": {
+      "owners": [
+        "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
+        "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
+        "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+        "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
+        "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
+        "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
+        "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+        "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704"
+      ],
+      "threshold": 3,
+      "version": "1.4.1",
+      "nonce": 2203,
+      "executionsAnalysed": 100
+    },
+    "liveness": [
+      {
+        "signer": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
+        "chainsSearched": [
+          "Ethereum"
+        ],
+        "lastOutgoingTx": null,
+        "lastApproval": {
+          "timestamp": 1787725991,
+          "source": "safe-confirmation"
+        },
+        "daysSinceAnySignal": 11,
+        "nonce": 0,
+        "indeterminate": false,
+        "statement": "No observed signature or transaction in 11 days across 1 chains (Ethereum)."
+      },
+      {
+        "signer": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
+        "chainsSearched": [
+          "Ethereum"
+        ],
+        "lastOutgoingTx": null,
+        "lastApproval": {
+          "timestamp": 1788274043,
+          "source": "safe-confirmation"
+        },
+        "daysSinceAnySignal": 5,
+        "nonce": 0,
+        "indeterminate": false,
+        "statement": "No observed signature or transaction in 5 days across 1 chains (Ethereum)."
+      },
+      {
+        "signer": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+        "chainsSearched": [
+          "Ethereum"
+        ],
+        "lastOutgoingTx": {
+          "chain": "ethereum",
+          "blockNumber": 23724641,
+          "timestamp": 1762243391
+        },
+        "lastApproval": null,
+        "daysSinceAnySignal": 306,
+        "nonce": 12,
+        "indeterminate": false,
+        "statement": "No observed signature or transaction in 306 days across 1 chains (Ethereum)."
+      },
+      {
+        "signer": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
+        "chainsSearched": [
+          "Ethereum"
+        ],
+        "lastOutgoingTx": null,
+        "lastApproval": {
+          "timestamp": 1788595283,
+          "source": "safe-confirmation"
+        },
+        "daysSinceAnySignal": 1,
+        "nonce": 0,
+        "indeterminate": false,
+        "statement": "No observed signature or transaction in 1 days across 1 chains (Ethereum)."
+      },
+      {
+        "signer": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
+        "chainsSearched": [
+          "Ethereum"
+        ],
+        "lastOutgoingTx": {
+          "chain": "ethereum",
+          "blockNumber": 25901097,
+          "timestamp": 1788490535
+        },
+        "lastApproval": {
+          "timestamp": 1787563570,
+          "source": "safe-confirmation"
+        },
+        "daysSinceAnySignal": 2,
+        "nonce": 24,
+        "indeterminate": false,
+        "statement": "No observed signature or transaction in 2 days across 1 chains (Ethereum)."
+      },
+      {
+        "signer": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
+        "chainsSearched": [
+          "Ethereum"
+        ],
+        "lastOutgoingTx": {
+          "chain": "ethereum",
+          "blockNumber": 25801580,
+          "timestamp": 1787292083
+        },
+        "lastApproval": {
+          "timestamp": 1787576611,
+          "source": "safe-confirmation"
+        },
+        "daysSinceAnySignal": 13,
+        "nonce": 4,
+        "indeterminate": false,
+        "statement": "No observed signature or transaction in 13 days across 1 chains (Ethereum)."
+      },
+      {
+        "signer": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+        "chainsSearched": [
+          "Ethereum"
+        ],
+        "lastOutgoingTx": null,
+        "lastApproval": {
+          "timestamp": 1788595283,
+          "source": "safe-confirmation"
+        },
+        "daysSinceAnySignal": 1,
+        "nonce": 0,
+        "indeterminate": false,
+        "statement": "No observed signature or transaction in 1 days across 1 chains (Ethereum)."
+      },
+      {
+        "signer": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
+        "chainsSearched": [
+          "Ethereum"
+        ],
+        "lastOutgoingTx": null,
+        "lastApproval": {
+          "timestamp": 1788595283,
+          "source": "safe-confirmation"
+        },
+        "daysSinceAnySignal": 1,
+        "nonce": 0,
+        "indeterminate": false,
+        "statement": "No observed signature or transaction in 1 days across 1 chains (Ethereum)."
+      }
+    ],
+    "reachability": {
+      "darkAfterDays": 180,
+      "owners": 8,
+      "threshold": 3,
+      "liveSigners": 7,
+      "darkSigners": 1,
+      "indeterminateSigners": 0,
+      "canStillReachThreshold": true,
+      "marginToFrozen": 4,
+      "darkList": [
+        "0x05708c9bD9bCa52c74aadD417382fb57b00457d2"
+      ],
+      "indeterminateList": []
+    },
+    "exposure": {
+      "address": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+      "queriedProtocols": 3,
+      "protocolsWithExposure": 0,
+      "openPositions": 0,
+      "exposedProtocolTvlUsd": 0,
+      "detail": [
+        {
+          "key": "aave-v3",
+          "label": "Aave v3",
+          "family": "lending",
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 24707816282.777378,
+          "protocolUsers": 4470305,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "aave-v2",
+          "label": "Aave v2",
+          "family": "lending",
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 97521554.66383636,
+          "protocolUsers": 1412341,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "uniswap-v3",
+          "label": "Uniswap V3",
+          "family": "dex-amm-extended",
+          "protocolType": "EXCHANGE",
+          "protocolTvlUsd": 1.3056340231110604e+26,
+          "protocolUsers": 82885786,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        }
+      ],
+      "source": "The Graph gateway, 3 standardized deployments, one query shape"
+    },
+    "tested": {
+      "independence": [
+        {
+          "a": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
+          "observed": 0.99,
+          "expected": 0.6740800000000094,
+          "excess": 0.31591999999999054,
+          "pValue": 0.0004997501249375312,
+          "permutations": 2000,
+          "counts": {
+            "both": 99,
+            "aOnly": 0,
+            "bOnly": 0,
+            "neither": 1,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
+          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
+          "observed": 0.01,
+          "expected": 0.0006500000000000005,
+          "excess": 0.009349999999999999,
+          "pValue": 0.06346826586706647,
+          "permutations": 2000,
+          "counts": {
+            "both": 1,
+            "aOnly": 6,
+            "bOnly": 0,
+            "neither": 93,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
+          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
+          "observed": 0.01,
+          "expected": 0.0015049999999999916,
+          "excess": 0.00849500000000001,
+          "pValue": 0.13843078460769614,
+          "permutations": 2000,
+          "counts": {
+            "both": 1,
+            "aOnly": 15,
+            "bOnly": 0,
+            "neither": 84,
+            "n": 100
+          }
+        },
+        {
+          "a": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
+          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
+          "observed": 0.41,
+          "expected": 0.3933099999999999,
+          "excess": 0.016690000000000094,
+          "pValue": 0.3968015992003998,
+          "permutations": 2000,
+          "counts": {
+            "both": 41,
+            "aOnly": 0,
+            "bOnly": 58,
+            "neither": 1,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
+          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
+          "observed": 0.37,
+          "expected": 0.35476499999999994,
+          "excess": 0.015235000000000054,
+          "pValue": 0.4077961019490255,
+          "permutations": 2000,
+          "counts": {
+            "both": 37,
+            "aOnly": 0,
+            "bOnly": 62,
+            "neither": 1,
+            "n": 100
+          }
+        },
+        {
+          "a": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
+          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+          "observed": 0.41,
+          "expected": 0.39300499999999927,
+          "excess": 0.016995000000000704,
+          "pValue": 0.40879560219890054,
+          "permutations": 2000,
+          "counts": {
+            "both": 41,
+            "aOnly": 0,
+            "bOnly": 58,
+            "neither": 1,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
+          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+          "observed": 0.37,
+          "expected": 0.35537500000000055,
+          "excess": 0.014624999999999444,
+          "pValue": 0.4147926036981509,
+          "permutations": 2000,
+          "counts": {
+            "both": 37,
+            "aOnly": 0,
+            "bOnly": 62,
+            "neither": 1,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
+          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
+          "observed": 0.15,
+          "expected": 0.1579649999999993,
+          "excess": -0.007964999999999306,
+          "pValue": 0.6251874062968515,
+          "permutations": 2000,
+          "counts": {
+            "both": 15,
+            "aOnly": 1,
+            "bOnly": 84,
+            "neither": 0,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
+          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+          "observed": 0.15,
+          "expected": 0.15843499999999927,
+          "excess": -0.008434999999999276,
+          "pValue": 0.6286856571714143,
+          "permutations": 2000,
+          "counts": {
+            "both": 15,
+            "aOnly": 1,
+            "bOnly": 84,
+            "neither": 0,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
+          "b": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
+          "observed": 0.01,
+          "expected": 0.010995000000000043,
+          "excess": -0.0009950000000000427,
+          "pValue": 0.665167416291854,
+          "permutations": 2000,
+          "counts": {
+            "both": 1,
+            "aOnly": 6,
+            "bOnly": 15,
+            "neither": 78,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
+          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+          "observed": 0.06,
+          "expected": 0.06945499999999985,
+          "excess": -0.009454999999999852,
+          "pValue": 0.7101449275362319,
+          "permutations": 2000,
+          "counts": {
+            "both": 6,
+            "aOnly": 1,
+            "bOnly": 93,
+            "neither": 0,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
+          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
+          "observed": 0.06,
+          "expected": 0.06975999999999982,
+          "excess": -0.009759999999999824,
+          "pValue": 0.7296351824087957,
+          "permutations": 2000,
+          "counts": {
+            "both": 6,
+            "aOnly": 1,
+            "bOnly": 93,
+            "neither": 0,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
+          "b": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
+          "observed": 0,
+          "expected": 0.026620000000000196,
+          "excess": -0.026620000000000196,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 7,
+            "bOnly": 37,
+            "neither": 56,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
+          "b": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+          "observed": 0,
+          "expected": 0,
+          "excess": 0,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 7,
+            "bOnly": 0,
+            "neither": 93,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
+          "b": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
+          "observed": 0,
+          "expected": 0.02881000000000023,
+          "excess": -0.02881000000000023,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 7,
+            "bOnly": 41,
+            "neither": 52,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
+          "b": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+          "observed": 0,
+          "expected": 0,
+          "excess": 0,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 37,
+            "bOnly": 0,
+            "neither": 63,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
+          "b": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
+          "observed": 0,
+          "expected": 0.15347499999999964,
+          "excess": -0.15347499999999964,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 37,
+            "bOnly": 41,
+            "neither": 22,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
+          "b": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
+          "observed": 0,
+          "expected": 0.0591999999999998,
+          "excess": -0.0591999999999998,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 37,
+            "bOnly": 16,
+            "neither": 47,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
+          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
+          "observed": 0,
+          "expected": 0.003614999999999956,
+          "excess": -0.003614999999999956,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 37,
+            "bOnly": 1,
+            "neither": 62,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+          "b": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
+          "observed": 0,
+          "expected": 0,
+          "excess": 0,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 0,
+            "bOnly": 41,
+            "neither": 59,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+          "b": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
+          "observed": 0,
+          "expected": 0,
+          "excess": 0,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 0,
+            "bOnly": 16,
+            "neither": 84,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
+          "observed": 0,
+          "expected": 0,
+          "excess": 0,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 0,
+            "bOnly": 1,
+            "neither": 99,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+          "observed": 0,
+          "expected": 0,
+          "excess": 0,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 0,
+            "bOnly": 99,
+            "neither": 1,
+            "n": 100
+          }
+        },
+        {
+          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
+          "observed": 0,
+          "expected": 0,
+          "excess": 0,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 0,
+            "bOnly": 99,
+            "neither": 1,
+            "n": 100
+          }
+        },
+        {
+          "a": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
+          "b": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
+          "observed": 0,
+          "expected": 0.0654799999999998,
+          "excess": -0.0654799999999998,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 41,
+            "bOnly": 16,
+            "neither": 43,
+            "n": 100
+          }
+        },
+        {
+          "a": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
+          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
+          "observed": 0,
+          "expected": 0.004339999999999941,
+          "excess": -0.004339999999999941,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 41,
+            "bOnly": 1,
+            "neither": 58,
+            "n": 100
+          }
+        },
+        {
+          "a": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
+          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+          "observed": 0,
+          "expected": 0.009569999999999966,
+          "excess": -0.009569999999999966,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 1,
+            "bOnly": 99,
+            "neither": 0,
+            "n": 100
+          }
+        },
+        {
+          "a": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
+          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
+          "observed": 0,
+          "expected": 0.00958999999999998,
+          "excess": -0.00958999999999998,
+          "pValue": 1,
+          "permutations": 2000,
+          "counts": {
+            "both": 0,
+            "aOnly": 1,
+            "bOnly": 99,
+            "neither": 0,
+            "n": 100
+          }
+        }
+      ],
+      "timing": []
+    },
+    "inferred": {
+      "quorumCurve": [
+        {
+          "alpha": 0.05,
+          "units": [
+            [
+              6,
+              7
+            ],
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            [
+              5
+            ]
+          ],
+          "unitCount": 7,
+          "effectiveQuorum": 2,
+          "declaredThreshold": 3
+        },
+        {
+          "alpha": 0.01,
+          "units": [
+            [
+              6,
+              7
+            ],
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            [
+              5
+            ]
+          ],
+          "unitCount": 7,
+          "effectiveQuorum": 2,
+          "declaredThreshold": 3
+        },
+        {
+          "alpha": 0.005,
+          "units": [
+            [
+              6,
+              7
+            ],
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            [
+              5
+            ]
+          ],
+          "unitCount": 7,
+          "effectiveQuorum": 2,
+          "declaredThreshold": 3
+        },
+        {
+          "alpha": 0.001,
+          "units": [
+            [
+              6,
+              7
+            ],
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            [
+              5
+            ]
+          ],
+          "unitCount": 7,
+          "effectiveQuorum": 2,
+          "declaredThreshold": 3
+        },
+        {
+          "alpha": 0.0005,
+          "units": [
+            [
+              6,
+              7
+            ],
+            [
+              0
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            [
+              5
+            ]
+          ],
+          "unitCount": 7,
+          "effectiveQuorum": 2,
+          "declaredThreshold": 3
+        }
+      ],
+      "robustness": {
+        "stable": true,
+        "min": 2,
+        "max": 2,
+        "verdict": "robust"
+      }
+    },
+    "findings": [
+      {
+        "tier": "observed",
+        "severity": "warning",
+        "title": "1 of 8 signers show no activity in 180+ days",
+        "detail": "Threshold is still reachable, with a margin of 4 signer(s). Losing 5 more makes this Safe permanently unable to act.",
+        "evidence": [
+          {
+            "label": "0x0570...57d2",
+            "value": "No observed signature or transaction in 306 days across 1 chains (Ethereum)."
+          }
+        ],
+        "caveat": "Absence of an observed signature is not proof a key is lost. A signer may hold their key and simply not have been asked to use it."
+      },
+      {
+        "tier": "tested",
+        "severity": "warning",
+        "title": "0x695C...78f6 and 0xfC0d...4704 do not co-sign independently",
+        "detail": "Observed co-signing rate 99.0% against 67.4% expected under independence (permutation test, 2000 draws, p = < 0.001).",
+        "evidence": [
+          {
+            "label": "both signed",
+            "value": "99 of 100 transactions"
+          },
+          {
+            "label": "a only / b only",
+            "value": "0 / 0"
+          },
+          {
+            "label": "null model",
+            "value": "marginals + per-tx signer count preserved"
+          }
+        ],
+        "caveat": "This measures statistical dependence, not identity. Two independent people who always agree produce the same signal as one person with two keys."
+      },
+      {
+        "tier": "inferred",
+        "severity": "warning",
+        "title": "Effective quorum may be lower than the declared 3",
+        "detail": "At alpha = 0.05, signers cluster into 7 independent unit(s), giving an effective quorum of 2. At alpha = 0.0005 it is 2. The finding is robust.",
+        "evidence": [
+          {
+            "label": "alpha = 0.05",
+            "value": "7 unit(s) -> effective quorum 2 of 3"
+          },
+          {
+            "label": "alpha = 0.01",
+            "value": "7 unit(s) -> effective quorum 2 of 3"
+          },
+          {
+            "label": "alpha = 0.005",
+            "value": "7 unit(s) -> effective quorum 2 of 3"
+          },
+          {
+            "label": "alpha = 0.001",
+            "value": "7 unit(s) -> effective quorum 2 of 3"
+          },
+          {
+            "label": "alpha = 0.0005",
+            "value": "7 unit(s) -> effective quorum 2 of 3"
+          }
+        ],
+        "caveat": "This is a lower bound under a chosen clustering parameter, not a claim about who controls these keys. It is reported as a curve precisely because a single number here would be unfalsifiable."
+      }
+    ],
+    "coverage": {
+      "note": "Analysed 100 executed transactions from the Safe Transaction Service, and searched 1 chain(s) for signer activity.",
+      "limitations": [
+        "Transactions executed outside the Safe Transaction Service are not in the participation matrix.",
+        "Liveness is bounded by the chains listed in the header. A signer active elsewhere reads as dark here.",
+        "Module-executed transactions bypass owner signatures entirely and are out of scope for independence.",
+        "Timing dependence cannot distinguish one operator from two people in the same meeting.",
+        "Exposure covers 3 standardized deployments only. A Safe with no account there may still hold value elsewhere.",
+        "Confirmations recorded within 5s of execution are treated as undated: signatures gathered offchain and posted together would otherwise register as perfect timing coupling."
+      ]
+    }
+  },
+  "settlement": {
+    "paid": true,
+    "mode": "facilitator",
+    "payer": "0.0.10391251",
+    "transaction": "0.0.7162784@1788706102.211915724",
+    "network": "hedera:testnet",
+    "amount": "16200000",
+    "hbar": "0.162000",
+    "asset": "0.0.0",
+    "explorer": "https://hashscan.io/testnet/transaction/0.0.7162784@1788706102.211915724",
+    "verifiedAt": 1788706110
+  },
+  "quote": {
+    "amount": "16200000",
+    "hbar": "0.162000",
+    "asset": "0.0.0",
+    "network": "hedera:testnet",
+    "breakdown": {
+      "base": "0.020000",
+      "pairwise": "0.112000",
+      "history": "0.020000",
+      "chains": "0.010000"
+    },
+    "units": {
+      "pairs": 28,
+      "txs": 100,
+      "chains": 1,
+      "permutations": 2000
+    }
+  },
+  "attestation": {
+    "v": 1,
+    "kind": "rollcall.control-surface",
+    "target": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+    "chain": "ethereum",
+    "method": "1.0.0",
+    "digest": "0x68d886d29a5e094fe29e2ea03d541bdc",
+    "at": 1788706126,
+    "metrics": {
+      "threshold": 3,
+      "owners": 8,
+      "darkSigners": 1,
+      "liveSigners": 7,
+      "canReachThreshold": true,
+      "effectiveQuorumMin": 2,
+      "effectiveQuorumMax": 2,
+      "dependentPairs": 1,
+      "txWindow": 100
+    },
+    "bodyHash": "0x06d4991f5c129fb65097d2d23dab2a8ea5da59bec70ccc003f0451e362ef6cb1"
+  },
+  "receipt": {
+    "submitted": true,
+    "topicId": "0.0.10392885",
+    "sequenceNumber": "3",
+    "consensusTimestamp": null,
+    "explorer": "https://hashscan.io/testnet/topic/0.0.10392885"
+  }
+}
