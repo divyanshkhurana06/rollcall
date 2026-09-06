@@ -16,9 +16,11 @@
     "web": "cd apps/web && vite",
     "scan": "tsx packages/core/src/scan.ts",
     "setup:hedera": "tsx scripts/setup-hedera.ts",
-    "agent": "tsx packages/agent/src/pay.ts"
+    "agent": "tsx packages/agent/src/pay.ts",
+    "cover": "tsx packages/cover/src/issue.ts"
   },
   "dependencies": {
+    "@hashgraph/asset-tokenization-sdk": "^8.0.0",
     "@hashgraph/sdk": "^2.81.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@x402/hedera": "^2.25.0",
