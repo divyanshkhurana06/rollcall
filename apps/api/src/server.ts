@@ -3,6 +3,7 @@ import cors from 'cors'
 import { buildReport } from '../../../packages/core/src/report.js'
 import { fetchSafe } from '../../../packages/core/src/extract/safeapi.js'
 import { calibrate } from '../../../packages/core/src/validate.js'
+import { loadLeaderboard } from '../../../packages/core/src/leaderboard.js'
 import type { ChainKey } from '../../../packages/core/src/chain.js'
 import { gate, quote, x402Config } from './x402.js'
 import { buildAttestation, submitAttestation, readArchive } from './hcs.js'
@@ -35,6 +36,19 @@ app.get('/quote/:chain/:address', async (req, res) => {
 
 /** Free: the calibration numbers. Published so the metrics can be checked, not trusted. */
 app.get('/method/calibration', (_req, res) => res.json(calibrate({ trials: 20, permutations: 800 })))
+
+/**
+ * Free: the leaderboard.
+ *
+ * Served from a cached scan rather than computed per request. Ranking a population means running
+ * the full pipeline per Safe, which is minutes of work, so it is a batch job (`npm run scan`) and
+ * the response carries `generatedAt` so nobody mistakes it for live.
+ */
+app.get('/leaderboard', (_req, res) => {
+  const lb = loadLeaderboard()
+  if (!lb) return res.status(404).json({ error: 'no scan cached yet - run: npm run scan' })
+  res.json(lb)
+})
 
 /** Free: the attestation archive. The scan is commodity; the time series is not. */
 app.get('/archive', async (req, res) => res.json(await readArchive(req.query.target as string | undefined)))
