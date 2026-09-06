@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { writeFileSync, mkdirSync } from 'node:fs'
 import { ExactHederaScheme } from '@x402/hedera/exact/client'
 import { createClientHederaSigner, PrivateKey } from '@x402/hedera'
 
@@ -99,6 +100,9 @@ const eq = Math.min(...r.inferred.quorumCurve.map((c: any) => c.effectiveQuorum)
 console.log(`  effective quorum     ${eq}  ${C.d}(${r.inferred.robustness.verdict})${C.x}`)
 console.log(`  signers dark         ${r.reachability.darkSigners} of ${r.reachability.owners}`)
 console.log(`  can reach quorum     ${r.reachability.canStillReachThreshold ? C.g + 'yes' : C.r + 'no'}${C.x}`)
+
+mkdirSync('data', { recursive: true })
+writeFileSync('data/last-report.json', JSON.stringify(body, null, 2))
 
 if (body.receipt?.submitted) {
   console.log(`\n${C.b}ATTESTED TO HCS${C.x}`)
