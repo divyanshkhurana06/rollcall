@@ -126,6 +126,56 @@ error rate."
 
 ---
 
+## The leaderboard
+
+A single report answers "is this Safe what it claims to be". It cannot answer the question users
+actually arrive with, which is "which of the things I depend on is worst". That needs a population.
+
+Safes are discovered from `ExecutionSuccess` logs rather than a curated list, filtered to those with
+enough signers and history for the statistics to mean anything, then ranked by consequence: can it
+still act at all, how far the honest quorum is from the declared one, how close it is to frozen, how
+many signers have gone quiet.
+
+```
+  safe                     decl  eff  gap  dark  margin  dep  invis
+  0x93a79764...0435D1      3/8   1    2    1     4       2    0
+  0x3dDFe4EA...1aC716      3/4   2    1    0     1       1    2
+  0x44AF8Df1...360ECe      3/4   2    1    0     1       1    3
+  0xe338204e...5cb6Fa      2/10  1    1    1     7       2    0
+```
+
+14 live Safes in that first scan. Two have an honest quorum below their declared threshold that
+holds at every significance level tested; four more only at looser levels, and those are marked `?`
+because they are a prompt to look closer rather than a conclusion.
+
+```bash
+npm run scan        # refresh the population scan, writes data/leaderboard.json
+```
+
+## Architecture
+
+```
+                  Safe Transaction Service ─┐
+                  execTransaction calldata ─┼─→ approver recovery ─┐
+                  eth_getTransactionCount ──┘                      │
+                                                                   ▼
+                            permutation test ── timing test ── quorum curve
+                                                                   │
+                                    tiered report (observed/tested/inferred)
+                                                                   │
+                        ┌──────────────────┬───────────────────────┼─────────────────┐
+                        ▼                  ▼                       ▼                 ▼
+                   x402 gate          HCS attestation          MCP server       CRE workflow
+                  (metered by         (timestamped             (agents ask      (watchlist stays
+                   real work)          archive)                 pre-integration) in the enclave)
+                        │                                            │
+                        └──────────────── web interface ─────────────┘
+                                     report + leaderboard
+```
+
+Full statistical method, including null hypotheses, the artifact filters and the calibration design:
+[`docs/METHOD.md`](docs/METHOD.md).
+
 ## Running it
 
 ```bash
@@ -134,6 +184,7 @@ cp .env.example .env
 
 npm run report -- 0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5   # terminal report
 npm run validate -- 0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5 # recovery + calibration
+npm run scan                                                    # population scan for the leaderboard
 npm run api                                                     # x402-gated API on :8787
 npm run web                                                     # interface on :5173
 npm run mcp                                                     # MCP server on stdio
