@@ -1,0 +1,24 @@
+
+EVM address in the account id variable
+  before:  OPERATOR_ID - set    OPERATOR_KEY - set     (both pass, run proceeds)
+  after:   FAIL operator account - OPERATOR_ID holds an EVM address, not an account id
+             Hedera accounts have two identifiers. The SDK operator needs the account id (0.0.12345); the EVM address belongs in a JSON-RPC context.
+
+ED25519 key against an ECDSA account
+  before:  OPERATOR_ID - set    OPERATOR_KEY - set     (both pass, run proceeds)
+  after:   OK   operator account - 0.0.10391251 exists on testnet
+  after:   FAIL operator key - key is ED25519 but 0.0.10391251 is ECDSA_SECP256K1
+             The key does not match the account. Signing would fail at the first transaction with INVALID_SIGNATURE and nothing pointing at the key format.
+  after:   OK   operator balance - 1000.00 HBAR
+
+account exists on another network only
+  before:  OPERATOR_ID - set    OPERATOR_KEY - set     (both pass, run proceeds)
+  after:   FAIL operator account - 0.0.999999999 does not exist on testnet
+             The account is valid in form but unknown to testnet. Accounts are per network - one created on mainnet does not exist on testnet.
+
+balance below what the run funds
+  before:  OPERATOR_ID - set    OPERATOR_KEY - set     (both pass, run proceeds)
+  after:   OK   operator account - 0.0.10391251 exists on testnet
+  after:   OK   operator key - ECDSA, matching the account
+  after:   WARN operator balance - 2.00 HBAR, run funds 10 plus fees
+             Top up at https://portal.hedera.com. A run that runs dry mid-flight fails after the agent budget is already spent.
