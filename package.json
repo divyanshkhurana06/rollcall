@@ -17,7 +17,9 @@
     "scan": "tsx packages/core/src/scan.ts",
     "setup:hedera": "tsx scripts/setup-hedera.ts",
     "agent": "tsx packages/agent/src/pay.ts",
-    "cover": "tsx packages/cover/src/issue.ts"
+    "cover": "tsx packages/cover/src/issue.ts",
+    "manifest": "tsx subgraph/generate-manifest.ts",
+    "protect": "tsx cre/simulate.ts"
   },
   "dependencies": {
     "@hashgraph/asset-tokenization-sdk": "^8.0.0",
