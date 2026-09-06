@@ -1,19 +1,19 @@
 {
   "report": {
     "target": {
-      "address": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+      "address": "0x97cd81555F18d612C02FC4468118C48adD9f1245",
       "chain": "ethereum"
     },
     "header": {
       "methodVersion": "1.0.0",
-      "generatedAt": "2026-09-06T14:48:46.048Z",
+      "generatedAt": "2026-09-06T16:05:41.319Z",
       "chainsSearched": [
         "ethereum"
       ],
       "txWindow": {
-        "count": 100,
-        "firstAt": 1787285867,
-        "lastAt": 1788595283
+        "count": 32,
+        "firstAt": 1776611735,
+        "lastAt": 1788503819
       },
       "sources": [
         "safe-transaction-service",
@@ -26,171 +26,84 @@
         "independence": 2000,
         "timing": 2000
       },
-      "inputDigest": "0x68d886d29a5e094fe29e2ea03d541bdc"
+      "inputDigest": "0x8e33025c470c93a244d2ba8694bca334"
     },
     "observed": {
       "owners": [
-        "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
-        "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
-        "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
-        "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
-        "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
-        "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
-        "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
-        "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704"
+        "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+        "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+        "0x52DA28d9289C3589239285700B92CdFCC5b74D99"
       ],
       "threshold": 3,
       "version": "1.4.1",
-      "nonce": 2203,
-      "executionsAnalysed": 100
+      "nonce": 32,
+      "executionsAnalysed": 32
     },
     "liveness": [
       {
-        "signer": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
-        "chainsSearched": [
-          "Ethereum"
-        ],
-        "lastOutgoingTx": null,
-        "lastApproval": {
-          "timestamp": 1787725991,
-          "source": "safe-confirmation"
-        },
-        "daysSinceAnySignal": 11,
-        "nonce": 0,
-        "indeterminate": false,
-        "statement": "No observed signature or transaction in 11 days across 1 chains (Ethereum)."
-      },
-      {
-        "signer": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
-        "chainsSearched": [
-          "Ethereum"
-        ],
-        "lastOutgoingTx": null,
-        "lastApproval": {
-          "timestamp": 1788274043,
-          "source": "safe-confirmation"
-        },
-        "daysSinceAnySignal": 5,
-        "nonce": 0,
-        "indeterminate": false,
-        "statement": "No observed signature or transaction in 5 days across 1 chains (Ethereum)."
-      },
-      {
-        "signer": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
+        "signer": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
         "chainsSearched": [
           "Ethereum"
         ],
         "lastOutgoingTx": {
           "chain": "ethereum",
-          "blockNumber": 23724641,
-          "timestamp": 1762243391
-        },
-        "lastApproval": null,
-        "daysSinceAnySignal": 306,
-        "nonce": 12,
-        "indeterminate": false,
-        "statement": "No observed signature or transaction in 306 days across 1 chains (Ethereum)."
-      },
-      {
-        "signer": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
-        "chainsSearched": [
-          "Ethereum"
-        ],
-        "lastOutgoingTx": null,
-        "lastApproval": {
-          "timestamp": 1788595283,
-          "source": "safe-confirmation"
-        },
-        "daysSinceAnySignal": 1,
-        "nonce": 0,
-        "indeterminate": false,
-        "statement": "No observed signature or transaction in 1 days across 1 chains (Ethereum)."
-      },
-      {
-        "signer": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
-        "chainsSearched": [
-          "Ethereum"
-        ],
-        "lastOutgoingTx": {
-          "chain": "ethereum",
-          "blockNumber": 25901097,
-          "timestamp": 1788490535
+          "blockNumber": 25902202,
+          "timestamp": 1788503819
         },
         "lastApproval": {
-          "timestamp": 1787563570,
+          "timestamp": 1788503472,
           "source": "safe-confirmation"
         },
         "daysSinceAnySignal": 2,
-        "nonce": 24,
+        "nonce": 85,
         "indeterminate": false,
         "statement": "No observed signature or transaction in 2 days across 1 chains (Ethereum)."
       },
       {
-        "signer": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
-        "chainsSearched": [
-          "Ethereum"
-        ],
-        "lastOutgoingTx": {
-          "chain": "ethereum",
-          "blockNumber": 25801580,
-          "timestamp": 1787292083
-        },
-        "lastApproval": {
-          "timestamp": 1787576611,
-          "source": "safe-confirmation"
-        },
-        "daysSinceAnySignal": 13,
-        "nonce": 4,
-        "indeterminate": false,
-        "statement": "No observed signature or transaction in 13 days across 1 chains (Ethereum)."
-      },
-      {
-        "signer": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
+        "signer": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
         "chainsSearched": [
           "Ethereum"
         ],
         "lastOutgoingTx": null,
         "lastApproval": {
-          "timestamp": 1788595283,
+          "timestamp": 1788503214,
           "source": "safe-confirmation"
         },
-        "daysSinceAnySignal": 1,
+        "daysSinceAnySignal": 2,
         "nonce": 0,
         "indeterminate": false,
-        "statement": "No observed signature or transaction in 1 days across 1 chains (Ethereum)."
+        "statement": "No observed signature or transaction in 2 days across 1 chains (Ethereum)."
       },
       {
-        "signer": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
+        "signer": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
         "chainsSearched": [
           "Ethereum"
         ],
         "lastOutgoingTx": null,
         "lastApproval": {
-          "timestamp": 1788595283,
+          "timestamp": 1788503035,
           "source": "safe-confirmation"
         },
-        "daysSinceAnySignal": 1,
+        "daysSinceAnySignal": 2,
         "nonce": 0,
         "indeterminate": false,
-        "statement": "No observed signature or transaction in 1 days across 1 chains (Ethereum)."
+        "statement": "No observed signature or transaction in 2 days across 1 chains (Ethereum)."
       }
     ],
     "reachability": {
       "darkAfterDays": 180,
-      "owners": 8,
+      "owners": 3,
       "threshold": 3,
-      "liveSigners": 7,
-      "darkSigners": 1,
+      "liveSigners": 3,
+      "darkSigners": 0,
       "indeterminateSigners": 0,
       "canStillReachThreshold": true,
-      "marginToFrozen": 4,
-      "darkList": [
-        "0x05708c9bD9bCa52c74aadD417382fb57b00457d2"
-      ],
+      "marginToFrozen": 0,
+      "darkList": [],
       "indeterminateList": []
     },
     "exposure": {
-      "address": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+      "address": "0x97cd81555F18d612C02FC4468118C48adD9f1245",
       "queriedProtocols": 3,
       "protocolsWithExposure": 0,
       "openPositions": 0,
@@ -201,8 +114,8 @@
           "label": "Aave v3",
           "family": "lending",
           "protocolType": "LENDING",
-          "protocolTvlUsd": 24707816282.777378,
-          "protocolUsers": 4470305,
+          "protocolTvlUsd": 24700650985.00203,
+          "protocolUsers": 4470627,
           "hasAccount": false,
           "openPositions": 0,
           "totalPositions": 0
@@ -224,7 +137,7 @@
           "family": "dex-amm-extended",
           "protocolType": "EXCHANGE",
           "protocolTvlUsd": 1.3056340231110604e+26,
-          "protocolUsers": 82885786,
+          "protocolUsers": 82885968,
           "hasAccount": false,
           "openPositions": 0,
           "totalPositions": 0
@@ -235,455 +148,80 @@
     "tested": {
       "independence": [
         {
-          "a": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
-          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
-          "observed": 0.99,
-          "expected": 0.6740800000000094,
-          "excess": 0.31591999999999054,
-          "pValue": 0.0004997501249375312,
+          "a": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+          "b": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+          "observed": 1,
+          "expected": 1,
+          "excess": 0,
+          "pValue": 1,
           "permutations": 2000,
           "counts": {
-            "both": 99,
+            "both": 32,
             "aOnly": 0,
             "bOnly": 0,
-            "neither": 1,
-            "n": 100
+            "neither": 0,
+            "n": 32
           }
         },
         {
-          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
-          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
-          "observed": 0.01,
-          "expected": 0.0006500000000000005,
-          "excess": 0.009349999999999999,
-          "pValue": 0.06346826586706647,
+          "a": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+          "b": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+          "observed": 1,
+          "expected": 1,
+          "excess": 0,
+          "pValue": 1,
           "permutations": 2000,
           "counts": {
-            "both": 1,
-            "aOnly": 6,
+            "both": 32,
+            "aOnly": 0,
             "bOnly": 0,
-            "neither": 93,
-            "n": 100
+            "neither": 0,
+            "n": 32
           }
         },
         {
-          "a": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
-          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
-          "observed": 0.01,
-          "expected": 0.0015049999999999916,
-          "excess": 0.00849500000000001,
-          "pValue": 0.13843078460769614,
+          "a": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+          "b": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+          "observed": 1,
+          "expected": 1,
+          "excess": 0,
+          "pValue": 1,
           "permutations": 2000,
           "counts": {
-            "both": 1,
-            "aOnly": 15,
+            "both": 32,
+            "aOnly": 0,
             "bOnly": 0,
-            "neither": 84,
-            "n": 100
-          }
-        },
-        {
-          "a": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
-          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
-          "observed": 0.41,
-          "expected": 0.3933099999999999,
-          "excess": 0.016690000000000094,
-          "pValue": 0.3968015992003998,
-          "permutations": 2000,
-          "counts": {
-            "both": 41,
-            "aOnly": 0,
-            "bOnly": 58,
-            "neither": 1,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
-          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
-          "observed": 0.37,
-          "expected": 0.35476499999999994,
-          "excess": 0.015235000000000054,
-          "pValue": 0.4077961019490255,
-          "permutations": 2000,
-          "counts": {
-            "both": 37,
-            "aOnly": 0,
-            "bOnly": 62,
-            "neither": 1,
-            "n": 100
-          }
-        },
-        {
-          "a": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
-          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
-          "observed": 0.41,
-          "expected": 0.39300499999999927,
-          "excess": 0.016995000000000704,
-          "pValue": 0.40879560219890054,
-          "permutations": 2000,
-          "counts": {
-            "both": 41,
-            "aOnly": 0,
-            "bOnly": 58,
-            "neither": 1,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
-          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
-          "observed": 0.37,
-          "expected": 0.35537500000000055,
-          "excess": 0.014624999999999444,
-          "pValue": 0.4147926036981509,
-          "permutations": 2000,
-          "counts": {
-            "both": 37,
-            "aOnly": 0,
-            "bOnly": 62,
-            "neither": 1,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
-          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
-          "observed": 0.15,
-          "expected": 0.1579649999999993,
-          "excess": -0.007964999999999306,
-          "pValue": 0.6251874062968515,
-          "permutations": 2000,
-          "counts": {
-            "both": 15,
-            "aOnly": 1,
-            "bOnly": 84,
             "neither": 0,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
-          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
-          "observed": 0.15,
-          "expected": 0.15843499999999927,
-          "excess": -0.008434999999999276,
-          "pValue": 0.6286856571714143,
-          "permutations": 2000,
-          "counts": {
-            "both": 15,
-            "aOnly": 1,
-            "bOnly": 84,
-            "neither": 0,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
-          "b": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
-          "observed": 0.01,
-          "expected": 0.010995000000000043,
-          "excess": -0.0009950000000000427,
-          "pValue": 0.665167416291854,
-          "permutations": 2000,
-          "counts": {
-            "both": 1,
-            "aOnly": 6,
-            "bOnly": 15,
-            "neither": 78,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
-          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
-          "observed": 0.06,
-          "expected": 0.06945499999999985,
-          "excess": -0.009454999999999852,
-          "pValue": 0.7101449275362319,
-          "permutations": 2000,
-          "counts": {
-            "both": 6,
-            "aOnly": 1,
-            "bOnly": 93,
-            "neither": 0,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
-          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
-          "observed": 0.06,
-          "expected": 0.06975999999999982,
-          "excess": -0.009759999999999824,
-          "pValue": 0.7296351824087957,
-          "permutations": 2000,
-          "counts": {
-            "both": 6,
-            "aOnly": 1,
-            "bOnly": 93,
-            "neither": 0,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
-          "b": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
-          "observed": 0,
-          "expected": 0.026620000000000196,
-          "excess": -0.026620000000000196,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 7,
-            "bOnly": 37,
-            "neither": 56,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
-          "b": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
-          "observed": 0,
-          "expected": 0,
-          "excess": 0,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 7,
-            "bOnly": 0,
-            "neither": 93,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x25b4EdD94ad4ca3283443f7e2604845f30C9ccf5",
-          "b": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
-          "observed": 0,
-          "expected": 0.02881000000000023,
-          "excess": -0.02881000000000023,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 7,
-            "bOnly": 41,
-            "neither": 52,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
-          "b": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
-          "observed": 0,
-          "expected": 0,
-          "excess": 0,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 37,
-            "bOnly": 0,
-            "neither": 63,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
-          "b": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
-          "observed": 0,
-          "expected": 0.15347499999999964,
-          "excess": -0.15347499999999964,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 37,
-            "bOnly": 41,
-            "neither": 22,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
-          "b": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
-          "observed": 0,
-          "expected": 0.0591999999999998,
-          "excess": -0.0591999999999998,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 37,
-            "bOnly": 16,
-            "neither": 47,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x96a22a1446656fdA7BbBD4C05F1664B46E185857",
-          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
-          "observed": 0,
-          "expected": 0.003614999999999956,
-          "excess": -0.003614999999999956,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 37,
-            "bOnly": 1,
-            "neither": 62,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
-          "b": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
-          "observed": 0,
-          "expected": 0,
-          "excess": 0,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 0,
-            "bOnly": 41,
-            "neither": 59,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
-          "b": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
-          "observed": 0,
-          "expected": 0,
-          "excess": 0,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 0,
-            "bOnly": 16,
-            "neither": 84,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
-          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
-          "observed": 0,
-          "expected": 0,
-          "excess": 0,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 0,
-            "bOnly": 1,
-            "neither": 99,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
-          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
-          "observed": 0,
-          "expected": 0,
-          "excess": 0,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 0,
-            "bOnly": 99,
-            "neither": 1,
-            "n": 100
-          }
-        },
-        {
-          "a": "0x05708c9bD9bCa52c74aadD417382fb57b00457d2",
-          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
-          "observed": 0,
-          "expected": 0,
-          "excess": 0,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 0,
-            "bOnly": 99,
-            "neither": 1,
-            "n": 100
-          }
-        },
-        {
-          "a": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
-          "b": "0x512D2da71D7234b9effF7708A1c3533C54E203ed",
-          "observed": 0,
-          "expected": 0.0654799999999998,
-          "excess": -0.0654799999999998,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 41,
-            "bOnly": 16,
-            "neither": 43,
-            "n": 100
-          }
-        },
-        {
-          "a": "0xc82dcbDE6CBcDa835deBd2DB41687152B81fd3Ea",
-          "b": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
-          "observed": 0,
-          "expected": 0.004339999999999941,
-          "excess": -0.004339999999999941,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 41,
-            "bOnly": 1,
-            "neither": 58,
-            "n": 100
-          }
-        },
-        {
-          "a": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
-          "b": "0x695C1BB29e562184fA28Fcc45782623E215c78f6",
-          "observed": 0,
-          "expected": 0.009569999999999966,
-          "excess": -0.009569999999999966,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 1,
-            "bOnly": 99,
-            "neither": 0,
-            "n": 100
-          }
-        },
-        {
-          "a": "0xFa3e3dE5b7EF9D4ee225e063a96057d640a6d0F3",
-          "b": "0xfC0dd5C1A309cE65Bf96235c17452B9590d84704",
-          "observed": 0,
-          "expected": 0.00958999999999998,
-          "excess": -0.00958999999999998,
-          "pValue": 1,
-          "permutations": 2000,
-          "counts": {
-            "both": 0,
-            "aOnly": 1,
-            "bOnly": 99,
-            "neither": 0,
-            "n": 100
+            "n": 32
           }
         }
       ],
-      "timing": []
+      "timing": [
+        {
+          "a": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+          "b": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+          "samples": 32,
+          "observedMedianGapSec": 162,
+          "nullMedianGapSec": 2871566,
+          "pValue": 0.0004997501249375312
+        },
+        {
+          "a": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+          "b": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+          "samples": 32,
+          "observedMedianGapSec": 176,
+          "nullMedianGapSec": 2872514,
+          "pValue": 0.0004997501249375312
+        },
+        {
+          "a": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+          "b": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+          "samples": 32,
+          "observedMedianGapSec": 99,
+          "nullMedianGapSec": 2874870,
+          "pValue": 0.0004997501249375312
+        }
+      ]
     },
     "inferred": {
       "quorumCurve": [
@@ -691,10 +229,6 @@
           "alpha": 0.05,
           "units": [
             [
-              6,
-              7
-            ],
-            [
               0
             ],
             [
@@ -702,29 +236,16 @@
             ],
             [
               2
-            ],
-            [
-              3
-            ],
-            [
-              4
-            ],
-            [
-              5
             ]
           ],
-          "unitCount": 7,
-          "effectiveQuorum": 2,
+          "unitCount": 3,
+          "effectiveQuorum": 3,
           "declaredThreshold": 3
         },
         {
           "alpha": 0.01,
           "units": [
             [
-              6,
-              7
-            ],
-            [
               0
             ],
             [
@@ -732,29 +253,16 @@
             ],
             [
               2
-            ],
-            [
-              3
-            ],
-            [
-              4
-            ],
-            [
-              5
             ]
           ],
-          "unitCount": 7,
-          "effectiveQuorum": 2,
+          "unitCount": 3,
+          "effectiveQuorum": 3,
           "declaredThreshold": 3
         },
         {
           "alpha": 0.005,
           "units": [
             [
-              6,
-              7
-            ],
-            [
               0
             ],
             [
@@ -762,29 +270,16 @@
             ],
             [
               2
-            ],
-            [
-              3
-            ],
-            [
-              4
-            ],
-            [
-              5
             ]
           ],
-          "unitCount": 7,
-          "effectiveQuorum": 2,
+          "unitCount": 3,
+          "effectiveQuorum": 3,
           "declaredThreshold": 3
         },
         {
           "alpha": 0.001,
           "units": [
             [
-              6,
-              7
-            ],
-            [
               0
             ],
             [
@@ -792,29 +287,16 @@
             ],
             [
               2
-            ],
-            [
-              3
-            ],
-            [
-              4
-            ],
-            [
-              5
             ]
           ],
-          "unitCount": 7,
-          "effectiveQuorum": 2,
+          "unitCount": 3,
+          "effectiveQuorum": 3,
           "declaredThreshold": 3
         },
         {
           "alpha": 0.0005,
           "units": [
             [
-              6,
-              7
-            ],
-            [
               0
             ],
             [
@@ -822,96 +304,63 @@
             ],
             [
               2
-            ],
-            [
-              3
-            ],
-            [
-              4
-            ],
-            [
-              5
             ]
           ],
-          "unitCount": 7,
-          "effectiveQuorum": 2,
+          "unitCount": 3,
+          "effectiveQuorum": 3,
           "declaredThreshold": 3
         }
       ],
       "robustness": {
         "stable": true,
-        "min": 2,
-        "max": 2,
+        "min": 3,
+        "max": 3,
         "verdict": "robust"
       }
     },
     "findings": [
       {
-        "tier": "observed",
-        "severity": "warning",
-        "title": "1 of 8 signers show no activity in 180+ days",
-        "detail": "Threshold is still reachable, with a margin of 4 signer(s). Losing 5 more makes this Safe permanently unable to act.",
+        "tier": "tested",
+        "severity": "info",
+        "title": "0x0a46...463E and 0xb936...8b98 approve unusually close together",
+        "detail": "Median gap 3m against 33.2d expected when approvals are shuffled across transactions (p = < 0.001, n = 32).",
         "evidence": [
           {
-            "label": "0x0570...57d2",
-            "value": "No observed signature or transaction in 306 days across 1 chains (Ethereum)."
+            "label": "paired approvals",
+            "value": "32"
           }
         ],
-        "caveat": "Absence of an observed signature is not proof a key is lost. A signer may hold their key and simply not have been asked to use it."
+        "caveat": "Two people on the same call also sign seconds apart. Tight timing is consistent with one operator AND with coordinated humans."
       },
       {
         "tier": "tested",
-        "severity": "warning",
-        "title": "0x695C...78f6 and 0xfC0d...4704 do not co-sign independently",
-        "detail": "Observed co-signing rate 99.0% against 67.4% expected under independence (permutation test, 2000 draws, p = < 0.001).",
+        "severity": "info",
+        "title": "0x0a46...463E and 0x52DA...4D99 approve unusually close together",
+        "detail": "Median gap 3m against 33.2d expected when approvals are shuffled across transactions (p = < 0.001, n = 32).",
         "evidence": [
           {
-            "label": "both signed",
-            "value": "99 of 100 transactions"
-          },
-          {
-            "label": "a only / b only",
-            "value": "0 / 0"
-          },
-          {
-            "label": "null model",
-            "value": "marginals + per-tx signer count preserved"
+            "label": "paired approvals",
+            "value": "32"
           }
         ],
-        "caveat": "This measures statistical dependence, not identity. Two independent people who always agree produce the same signal as one person with two keys."
+        "caveat": "Two people on the same call also sign seconds apart. Tight timing is consistent with one operator AND with coordinated humans."
       },
       {
-        "tier": "inferred",
-        "severity": "warning",
-        "title": "Effective quorum may be lower than the declared 3",
-        "detail": "At alpha = 0.05, signers cluster into 7 independent unit(s), giving an effective quorum of 2. At alpha = 0.0005 it is 2. The finding is robust.",
+        "tier": "tested",
+        "severity": "info",
+        "title": "0xb936...8b98 and 0x52DA...4D99 approve unusually close together",
+        "detail": "Median gap 2m against 33.3d expected when approvals are shuffled across transactions (p = < 0.001, n = 32).",
         "evidence": [
           {
-            "label": "alpha = 0.05",
-            "value": "7 unit(s) -> effective quorum 2 of 3"
-          },
-          {
-            "label": "alpha = 0.01",
-            "value": "7 unit(s) -> effective quorum 2 of 3"
-          },
-          {
-            "label": "alpha = 0.005",
-            "value": "7 unit(s) -> effective quorum 2 of 3"
-          },
-          {
-            "label": "alpha = 0.001",
-            "value": "7 unit(s) -> effective quorum 2 of 3"
-          },
-          {
-            "label": "alpha = 0.0005",
-            "value": "7 unit(s) -> effective quorum 2 of 3"
+            "label": "paired approvals",
+            "value": "32"
           }
         ],
-        "caveat": "This is a lower bound under a chosen clustering parameter, not a claim about who controls these keys. It is reported as a curve precisely because a single number here would be unfalsifiable."
+        "caveat": "Two people on the same call also sign seconds apart. Tight timing is consistent with one operator AND with coordinated humans."
       }
     ],
     "coverage": {
-      "note": "Analysed 100 executed transactions from the Safe Transaction Service, and searched 1 chain(s) for signer activity.",
+      "note": "Analysed 32 executed transactions from the Safe Transaction Service, and searched 1 chain(s) for signer activity.",
       "limitations": [
         "Transactions executed outside the Safe Transaction Service are not in the participation matrix.",
         "Liveness is bounded by the chains listed in the header. A signer active elsewhere reads as dark here.",
@@ -926,13 +375,13 @@
     "paid": true,
     "mode": "facilitator",
     "payer": "0.0.10391251",
-    "transaction": "0.0.7162784@1788706102.211915724",
+    "transaction": "0.0.7162784@1788710693.178612624",
     "network": "hedera:testnet",
     "amount": "16200000",
     "hbar": "0.162000",
     "asset": "0.0.0",
-    "explorer": "https://hashscan.io/testnet/transaction/0.0.7162784@1788706102.211915724",
-    "verifiedAt": 1788706110
+    "explorer": "https://hashscan.io/testnet/transaction/0.0.7162784@1788710693.178612624",
+    "verifiedAt": 1788710704
   },
   "quote": {
     "amount": "16200000",
@@ -955,28 +404,28 @@
   "attestation": {
     "v": 1,
     "kind": "rollcall.control-surface",
-    "target": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+    "target": "0x97cd81555F18d612C02FC4468118C48adD9f1245",
     "chain": "ethereum",
     "method": "1.0.0",
-    "digest": "0x68d886d29a5e094fe29e2ea03d541bdc",
-    "at": 1788706126,
+    "digest": "0x8e33025c470c93a244d2ba8694bca334",
+    "at": 1788710741,
     "metrics": {
       "threshold": 3,
-      "owners": 8,
-      "darkSigners": 1,
-      "liveSigners": 7,
+      "owners": 3,
+      "darkSigners": 0,
+      "liveSigners": 3,
       "canReachThreshold": true,
-      "effectiveQuorumMin": 2,
-      "effectiveQuorumMax": 2,
-      "dependentPairs": 1,
-      "txWindow": 100
+      "effectiveQuorumMin": 3,
+      "effectiveQuorumMax": 3,
+      "dependentPairs": 0,
+      "txWindow": 32
     },
-    "bodyHash": "0x06d4991f5c129fb65097d2d23dab2a8ea5da59bec70ccc003f0451e362ef6cb1"
+    "bodyHash": "0x3e28da242b843bb4c3e1843c98144b70057855a6d94c076a1e4b0ba4f45930ce"
   },
   "receipt": {
     "submitted": true,
     "topicId": "0.0.10392885",
-    "sequenceNumber": "3",
+    "sequenceNumber": "4",
     "consensusTimestamp": null,
     "explorer": "https://hashscan.io/testnet/topic/0.0.10392885"
   }
