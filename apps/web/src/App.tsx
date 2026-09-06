@@ -337,7 +337,7 @@ function Method({ r, calib }: any) {
               <div className="line"><span>transactions</span><b>{calib.nTx}</b></div>
               <div className="line"><span>permutations</span><b>{calib.permutations.toLocaleString()}</b></div>
               <div className="line" title="An empirical p-value cannot go below 1/(N+1), so finer alphas are not reported.">
-                <span>resolution</span><b>p ≥ {calib.minResolvableP?.toFixed(4)}</b></div>
+                <span>resolution</span><b>p >= {calib.minResolvableP?.toFixed(4)}</b></div>
             </div>
           </div>
         )}

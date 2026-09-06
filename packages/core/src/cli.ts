@@ -25,7 +25,7 @@ console.log(`${C.d}${'─'.repeat(74)}${C.x}`)
 console.log(`target      ${C.c}${report.target.address}${C.x} on ${report.target.chain}`)
 console.log(`method      v${h.methodVersion}   seed ${h.seed}   perms ${h.permutations.independence}`)
 console.log(`digest      ${C.d}${h.inputDigest}${C.x}`)
-console.log(`window      ${h.txWindow.count} executed txs${h.txWindow.firstAt ? `, ${new Date(h.txWindow.firstAt * 1000).toISOString().slice(0, 10)} → ${new Date(h.txWindow.lastAt! * 1000).toISOString().slice(0, 10)}` : ''}`)
+console.log(`window      ${h.txWindow.count} executed txs${h.txWindow.firstAt ? `, ${new Date(h.txWindow.firstAt * 1000).toISOString().slice(0, 10)} -> ${new Date(h.txWindow.lastAt! * 1000).toISOString().slice(0, 10)}` : ''}`)
 
 console.log(`\n${C.b}OBSERVED${C.x} ${C.d}(read from chain - facts)${C.x}`)
 console.log(`  threshold ${C.b}${o.threshold} of ${o.owners.length}${C.x}   Safe v${o.version ?? '?'}   nonce ${o.nonce}`)
@@ -49,7 +49,7 @@ for (const t of report.tested.timing.filter((t) => t.pValue < 0.05).slice(0, 4))
 
 console.log(`\n${C.b}INFERRED${C.x} ${C.d}(parameterised - reported as a curve, never a constant)${C.x}`)
 for (const q of report.inferred.quorumCurve)
-  console.log(`  alpha ${String(q.alpha).padEnd(7)} ${q.unitCount} independent unit(s)  →  effective quorum ${C.b}${q.effectiveQuorum}${C.x} of ${q.declaredThreshold}`)
+  console.log(`  alpha ${String(q.alpha).padEnd(7)} ${q.unitCount} independent unit(s)  ->  effective quorum ${C.b}${q.effectiveQuorum}${C.x} of ${q.declaredThreshold}`)
 console.log(`  ${C.d}verdict: ${report.inferred.robustness.verdict}${C.x}`)
 
 console.log(`\n${C.b}FINDINGS${C.x}`)

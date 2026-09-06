@@ -95,10 +95,10 @@ The number most likely to become a fabrication, so it is never reported as a con
 Published as a curve:
 
 ```
-α = 0.05     7 independent units  →  effective quorum 2 of 3
-α = 0.01     7 independent units  →  effective quorum 2 of 3
-α = 0.001    7 independent units  →  effective quorum 2 of 3
-α = 0.0005   7 independent units  →  effective quorum 2 of 3
+α = 0.05     7 independent units  ->  effective quorum 2 of 3
+α = 0.01     7 independent units  ->  effective quorum 2 of 3
+α = 0.001    7 independent units  ->  effective quorum 2 of 3
+α = 0.0005   7 independent units  ->  effective quorum 2 of 3
 verdict: robust - holds across the whole tested range
 ```
 
