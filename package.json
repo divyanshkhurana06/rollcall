@@ -13,7 +13,8 @@
     "validate": "tsx packages/core/src/validate.ts",
     "api": "tsx apps/api/src/server.ts",
     "mcp": "tsx packages/mcp/src/server.ts",
-    "web": "cd apps/web && vite"
+    "web": "cd apps/web && vite",
+    "scan": "tsx packages/core/src/scan.ts"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.81.0",
