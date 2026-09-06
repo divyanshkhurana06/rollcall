@@ -38,6 +38,9 @@ export interface LeaderboardRow {
   oldestSignalDays: number | null
   digest: string
   scannedAt: number
+  /** Standardized protocols where this Safe appears as an account. */
+  exposedProtocols: string[]
+  openPositions: number
 }
 
 export interface Leaderboard {
@@ -133,6 +136,8 @@ export async function buildLeaderboard(opts: {
         oldestSignalDays: days.length ? Math.max(...days) : null,
         digest: r.header.inputDigest,
         scannedAt: Math.floor(Date.now() / 1000),
+        exposedProtocols: (r.exposure?.detail ?? []).filter((d) => d.hasAccount).map((d) => d.label),
+        openPositions: r.exposure?.openPositions ?? 0,
       })
     } catch { skipped++ }
   }

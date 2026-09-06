@@ -5,6 +5,7 @@ import { pairwiseDependence, type PairDependence } from './stats/independence.js
 import { timingDependence, type TimingPair } from './stats/timing.js'
 import { quorumCurve, robustness, type QuorumPoint } from './stats/quorum.js'
 import { signerLiveness, reachability, type SignerLiveness } from './stats/liveness.js'
+import { accountExposure, graphConfigured, STANDARDIZED, type Exposure } from './exposure.js'
 
 export const METHOD_VERSION = '1.0.0'
 
@@ -65,6 +66,8 @@ export interface RollCallReport {
   }
   liveness: SignerLiveness[]
   reachability: ReturnType<typeof reachability>
+  /** What money sits behind these keys. One query shape, N standardized protocols. */
+  exposure: Exposure | null
   tested: { independence: PairDependence[]; timing: TimingPair[] }
   inferred: { quorumCurve: QuorumPoint[]; robustness: ReturnType<typeof robustness> }
   findings: Finding[]
@@ -127,6 +130,9 @@ export async function buildReport(address: string, opts: BuildOpts = {}): Promis
   const reach = reachability(liveness, safe.threshold, darkAfterDays)
   const rob = robustness(curve)
 
+  // Authority means nothing without exposure. A dark 2-of-9 over an empty wallet is trivia.
+  const exposure = await accountExposure(safe.address)
+
   const report: RollCallReport = {
     target: { address: safe.address, chain, label: opts.label },
     header: {
@@ -138,7 +144,12 @@ export async function buildReport(address: string, opts: BuildOpts = {}): Promis
         firstAt: txs[0]?.executedAt ?? null,
         lastAt: txs[txs.length - 1]?.executedAt ?? null,
       },
-      sources: ['safe-transaction-service', 'rpc-archive-nonce', 'rpc-state'],
+      sources: [
+        'safe-transaction-service',
+        'rpc-archive-nonce',
+        'rpc-state',
+        ...(graphConfigured() ? [`the-graph-gateway (${STANDARDIZED.length} standardized deployments)`] : []),
+      ],
       seed,
       permutations: { independence: permIndep, timing: permTiming },
       inputDigest: digest(safe, txs, seed, permIndep),
@@ -152,6 +163,7 @@ export async function buildReport(address: string, opts: BuildOpts = {}): Promis
     },
     liveness,
     reachability: reach,
+    exposure,
     tested: { independence, timing },
     inferred: { quorumCurve: curve, robustness: rob },
     findings: [],
@@ -164,6 +176,7 @@ export async function buildReport(address: string, opts: BuildOpts = {}): Promis
         'Liveness is bounded by the chains listed in the header. A signer active elsewhere reads as dark here.',
         'Module-executed transactions bypass owner signatures entirely and are out of scope for independence.',
         'Timing dependence cannot distinguish one operator from two people in the same meeting.',
+        `Exposure covers ${STANDARDIZED.length} standardized deployments only. A Safe with no account there may still hold value elsewhere.`,
         'Confirmations recorded within 5s of execution are treated as undated: signatures gathered offchain and posted together would otherwise register as perfect timing coupling.',
       ],
     },
