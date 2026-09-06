@@ -15,11 +15,13 @@
     "mcp": "tsx packages/mcp/src/server.ts",
     "web": "cd apps/web && vite",
     "scan": "tsx packages/core/src/scan.ts",
-    "setup:hedera": "tsx scripts/setup-hedera.ts"
+    "setup:hedera": "tsx scripts/setup-hedera.ts",
+    "agent": "tsx packages/agent/src/pay.ts"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.81.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "@x402/hedera": "^2.25.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
