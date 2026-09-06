@@ -1,0 +1,35 @@
+{
+  "name": "rollcall",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "probe": "tsx packages/core/test/probe-recovery.ts",
+    "report": "tsx packages/core/src/cli.ts",
+    "validate": "tsx packages/core/src/validate.ts",
+    "api": "tsx apps/api/src/server.ts",
+    "mcp": "tsx packages/mcp/src/server.ts",
+    "web": "cd apps/web && vite"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.81.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "viem": "^2.56.3",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.2.2"
+  }
+}
