@@ -14,7 +14,8 @@
     "api": "tsx apps/api/src/server.ts",
     "mcp": "tsx packages/mcp/src/server.ts",
     "web": "cd apps/web && vite",
-    "scan": "tsx packages/core/src/scan.ts"
+    "scan": "tsx packages/core/src/scan.ts",
+    "setup:hedera": "tsx scripts/setup-hedera.ts"
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.81.0",

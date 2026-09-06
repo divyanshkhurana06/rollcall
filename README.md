@@ -192,6 +192,15 @@ npm run mcp                                                     # MCP server on 
 
 No API keys are required to run the core. Everything above works against public endpoints.
 
+To enable the HCS attestation archive, put a Hedera testnet account in `.env` and run:
+
+```bash
+npm run setup:hedera
+```
+
+It creates the topic and prints the `HCS_TOPIC_ID` line to add. Until then the report says
+`not submitted - not configured` rather than pretending an attestation was written.
+
 ---
 
 ## Sponsor integrations
