@@ -209,6 +209,9 @@ Each one serves the same primitive - *a claim about authority, with its evidence
 
 ### The Graph - `subgraph/`, `packages/core/src/graph.ts`, `packages/mcp/`
 
+**The subgraph is deployed** to Subgraph Studio and indexing mainnet:
+`https://api.studio.thegraph.com/query/1758792/rollcall/v0.0.2`
+
 **Composability.** Authority is expressed through the same handful of events in nearly every
 contract ever deployed - `OwnershipTransferred`, `RoleGranted`/`RoleRevoked`, EIP-1967
 `AdminChanged`/`Upgraded`, Safe's `AddedOwner`/`ChangedThreshold`. Nobody has given that pattern a
@@ -244,7 +247,40 @@ and returns the full breakdown, so an agent can decide before paying.
 timestamped attestation, so *"on 10 September two of these signers had already been dark for 300
 days"* is provable after an incident rather than asserted. The archive is the asset.
 
-### Chainlink - `cre/rollcall-watch.ts`
+### Chainlink - `cre/rollcall-watch.ts`, `cre/liquidation-protection.ts`
+
+Two confidential workflows.
+
+**Control surface watch.** A watchlist is an exposure map. Knowing which protocols an institution
+watches, and at what thresholds it de-risks, tells you where its money is and what would make it
+move. So the watchlist, thresholds and raw reports execute inside `handlerInTee`; what leaves is a
+breach flag and a commitment to the report digests.
+
+**Automated liquidation protection.** The challenge asks for a workflow that protects a virtual
+ETH-collateral / USDC-debt position through simulated market movements with private rules. That is
+implemented in full. What Roll Call adds is a second trigger no liquidation protection currently
+has: every existing system watches one variable, price. But a position becomes unsafe for reasons
+that never touch a price feed. If the market's control surface loses quorum, or its signers turn
+out to be one party, the correct response is to de-risk regardless of how healthy the position
+looks.
+
+```
+  path          unprotected    protected      actions  capital used  equity kept
+  crash         LIQUIDATED     LIQUIDATED     2        $8000         $0
+  grind down    LIQUIDATED     open           2        $8000         $5167
+  whipsaw       survived       open           1        $6686         $12354
+  recovery      LIQUIDATED     open           2        $8000         $14595
+```
+
+The crash path still liquidates. $8,000 of emergency capital cannot rescue $18,000 of debt against
+a sustained collapse, and reporting 4 out of 4 would have meant tuning the parameters until the
+number looked good.
+
+`npm run protect` runs it. Both workflows deliver only an action, a size and a commitment on chain:
+`LiquidationProtectionConsumer.sol` contains no health factor, no thresholds, no capital balance,
+and no indication of which rule fired.
+
+### Chainlink - watchlist detail
 
 A watchlist is an exposure map. Knowing which protocols an institution watches, and at what
 thresholds it de-risks, tells you where its money is and what would make it move. So the watchlist,
