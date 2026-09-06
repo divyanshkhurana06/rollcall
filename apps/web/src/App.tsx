@@ -12,6 +12,7 @@ const SAMPLES = [
 ]
 
 export default function App() {
+  const [view, setView] = useState<'report' | 'board'>('board')
   const [addr, setAddr] = useState(SAMPLES[0].addr)
   const [chain, setChain] = useState('ethereum')
   const [data, setData] = useState<any>(null)
@@ -42,6 +43,12 @@ export default function App() {
     finally { setBusy(false); setStep('') }
   }
 
+  function inspect(target: string) {
+    setAddr(target)
+    setView('report')
+    run(target)
+  }
+
   const r = data?.report
 
   return (
@@ -51,11 +58,17 @@ export default function App() {
           <div className="logo">Roll Call<span> / control surface</span></div>
           <div className="tag">Who can take everything, how fast, and are they still awake?</div>
           <div className="mast-spacer" />
+          <div className="tabs">
+            <button className={view === 'board' ? 'tab on' : 'tab'} onClick={() => setView('board')}>Leaderboard</button>
+            <button className={view === 'report' ? 'tab on' : 'tab'} onClick={() => setView('report')}>Single report</button>
+          </div>
           <div className="mast-link">method v{r?.header.methodVersion ?? '1.0.0'}</div>
         </div>
       </header>
 
       <div className="wrap">
+        {view === 'board' && <Board onInspect={inspect} />}
+        {view === 'report' && <>
         <div className="search">
           <input value={addr} onChange={(e) => setAddr(e.target.value.trim())}
                  onKeyDown={(e) => e.key === 'Enter' && !busy && run()} placeholder="0x... Safe address" spellCheck={false} />
@@ -89,7 +102,81 @@ export default function App() {
             <Method r={r} calib={calib} />
           </>
         )}
+        </>}
       </div>
+    </>
+  )
+}
+
+function Board({ onInspect }: { onInspect: (a: string) => void }) {
+  const [lb, setLb] = useState<any>(null)
+  const [err, setErr] = useState('')
+
+  useEffect(() => {
+    fetch(`${API}/leaderboard`).then(async (r) => {
+      const b = await r.json()
+      if (b.error) setErr(b.error); else setLb(b)
+    }).catch((e) => setErr(String(e)))
+  }, [])
+
+  if (err) return <div className="panel err pad">{err}</div>
+  if (!lb) return <div className="loading"><span className="spin" /><span className="step">loading scan...</span></div>
+
+  const worst = lb.rows.filter((r: any) => r.gap > 0 && r.robust).length
+  const soft = lb.rows.filter((r: any) => r.gap > 0 && !r.robust).length
+  const frozenish = lb.rows.filter((r: any) => !r.canStillReachThreshold).length
+  const invisible = lb.rows.reduce((a: number, r: any) => a + r.invisibleSigners, 0)
+
+  return (
+    <>
+      <div className="board-intro">
+        <h1>Every protocol tells you it is decentralised.</h1>
+        <p>
+          This is {lb.rows.length} live Safes, discovered from chain activity rather than hand-picked,
+          ranked by the distance between the quorum they declare and the one their own signing history
+          supports. <b>{worst}</b> of them have an honest quorum below their declared threshold that holds
+          across every significance level tested{soft > 0 && <>, and <b>{soft}</b> more only at looser
+          levels, which is a prompt to look closer rather than a conclusion</>}.
+          {frozenish > 0 && <> <b>{frozenish}</b> can no longer reach quorum at all.</>}
+          {' '}<b>{invisible}</b> signers across this set have never sent a transaction, so every block
+          explorer shows them as inactive.
+        </p>
+      </div>
+
+      <div className="panel">
+        <div className="board-head">
+          <div>Safe</div><div>Declared</div><div>Effective</div><div>Gap</div>
+          <div>Dark</div><div>Margin</div><div>Dep</div><div>Invisible</div><div />
+        </div>
+        {lb.rows.map((r: any) => (
+          <div className="board-row" key={r.address}>
+            <div className="addr">{short(r.address)}</div>
+            <div className="num">{r.threshold} of {r.owners}</div>
+            <div className="num">{r.effectiveQuorum}</div>
+            <div className={`num gap g${r.gap > 0 && !r.robust ? 'soft' : Math.min(r.gap, 3)}`}
+                 title={r.gap === 0 ? 'declared quorum is supported'
+                   : r.robust ? 'holds across every alpha tested' : 'appears only at looser alpha - a flag, not a finding'}>
+              {r.gap > 0 ? `-${r.gap}` : '0'}{r.gap > 0 && !r.robust ? '?' : ''}</div>
+            <div className={`num ${r.darkSigners > 0 ? 'warnp' : ''}`}>{r.darkSigners}</div>
+            <div className={`num ${!r.canStillReachThreshold ? 'critp' : r.marginToFrozen <= 1 ? 'warnp' : ''}`}>
+              {r.canStillReachThreshold ? r.marginToFrozen : 'frozen'}</div>
+            <div className={`num ${r.dependentPairs > 0 ? 'warnp' : ''}`}>{r.dependentPairs}</div>
+            <div className="num">{r.invisibleSigners}</div>
+            <div><button className="chip" onClick={() => onInspect(r.address)}>inspect</button></div>
+          </div>
+        ))}
+      </div>
+
+      <p className="note" style={{ marginTop: 10 }}>
+        Scanned {new Date(lb.generatedAt * 1000).toISOString().slice(0, 16).replace('T', ' ')} UTC, method v{lb.methodVersion}.
+        Safes are discovered from <code>ExecutionSuccess</code> logs, not curated. Included only if they have at
+        least {lb.criteria.minOwners} owners and {lb.criteria.minTransactions} transactions, because fewer signers
+        gives no pairs to test and less history gives a permutation distribution too coarse to resolve anything.
+        {' '}<b>Gap</b> is the declared threshold minus the lowest effective quorum across the tested alpha
+        grid. A gap marked <b>?</b> appears only at looser significance levels, so treat it as a prompt to
+        look closer rather than a conclusion. Everything here measures statistical dependence between
+        signers, never identity.
+      </p>
     </>
   )
 }
