@@ -1,0 +1,85 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Roll Call - a protocol-agnostic AUTHORITY schema.
+#
+# Authority is expressed through the same handful of events in nearly every contract ever
+# deployed. Ownable emits OwnershipTransferred. AccessControl emits RoleGranted/RoleRevoked.
+# EIP-1967 proxies emit AdminChanged/Upgraded. Safe emits AddedOwner/ChangedThreshold.
+#
+# Nobody has given that pattern a shared schema, so every tool that wants to answer "who can
+# change this contract" writes a bespoke integration per protocol. This schema is the shared
+# shape: index once, and one query answers the question for any protocol on any chain.
+#
+# Adding a new protocol to Roll Call costs zero new query code - only a datasource entry.
+# ─────────────────────────────────────────────────────────────────────────────
+
+type Contract @entity(immutable: false) {
+  id: ID!                          # chain:address
+  address: Bytes!
+  chain: String!
+  kind: String!                    # safe | proxy | ownable | access-control | unknown
+  firstSeenAt: BigInt!
+  authority: [AuthorityRecord!]! @derivedFrom(field: "contract")
+  threshold: Int
+  ownerCount: Int
+}
+
+"A held power, with the window during which it was held. Revoked records are kept, never deleted."
+type AuthorityRecord @entity(immutable: false) {
+  id: ID!
+  contract: Contract!
+  kind: String!                    # owner | role | proxy-admin | safe-owner | threshold | pauser
+  holder: Bytes
+  role: Bytes                      # AccessControl role id, null otherwise
+  grantedAt: BigInt!
+  grantedTx: Bytes!
+  revokedAt: BigInt
+  revokedTx: Bytes
+  chain: String!
+}
+
+"""
+One recovered approval. THIS is the entity that does not exist anywhere else.
+
+A Safe transaction is executed by one address paying gas, but approved by N owners whose
+signatures are packed into execTransaction calldata. Those owners emit no event and appear
+inactive to every block explorer. Recovering them from the signature blob is what makes
+per-signer liveness measurable at all.
+"""
+type SignerApproval @entity(immutable: true) {
+  id: ID!                          # chain:safeTxHash:signer
+  safe: Contract!
+  signer: Bytes!
+  safeTxHash: Bytes!
+  signedAt: BigInt!
+  block: BigInt!
+  txHash: Bytes!
+  kind: String!                    # eip712 | eth_sign | approved_hash | contract
+  position: Int!
+  chain: String!
+}
+
+"Rolling per-signer aggregate - the cheap answer to 'is this key still warm, anywhere?'"
+type Signer @entity(immutable: false) {
+  id: ID!                          # address (chain-agnostic on purpose)
+  address: Bytes!
+  approvals: BigInt!
+  firstApprovalAt: BigInt!
+  lastApprovalAt: BigInt!
+  chains: [String!]!
+  safes: [String!]!
+}
+
+"Executed Safe transactions, so the participation matrix can be rebuilt without RPC."
+type SafeExecution @entity(immutable: true) {
+  id: ID!
+  safe: Contract!
+  safeTxHash: Bytes!
+  executor: Bytes!
+  approverCount: Int!
+  target: Bytes!
+  value: BigInt!
+  executedAt: BigInt!
+  block: BigInt!
+  chain: String!
+  success: Boolean!
+}
