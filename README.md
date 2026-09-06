@@ -156,7 +156,7 @@ npm run scan        # refresh the population scan, writes data/leaderboard.json
 
 ```
                   Safe Transaction Service ─┐
-                  execTransaction calldata ─┼─→ approver recovery ─┐
+                  execTransaction calldata ─┼─-> approver recovery ─┐
                   eth_getTransactionCount ──┘                      │
                                                                    ▼
                             permutation test ── timing test ── quorum curve
