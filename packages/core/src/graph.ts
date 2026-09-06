@@ -20,32 +20,27 @@ import type { ChainKey } from './chain.js'
  * schema is supposed to give: adding a protocol to Roll Call costs zero new code.
  */
 
-export interface AuthorityRecord {
-  id: string
-  contract: string
-  kind: 'owner' | 'role' | 'proxy-admin' | 'safe-owner' | 'threshold' | 'pauser'
-  holder: string | null
-  role: string | null
-  grantedAt: number
-  revokedAt: number | null
-  txHash: string
-  chain: string
-}
-
 export interface SignerApproval {
   id: string
-  safe: string
   signer: string
   safeTxHash: string
-  signedAt: number
+  signedAt: string
   kind: string
   chain: string
 }
 
-const ENDPOINT = () => process.env.SUBGRAPH_URL ?? ''
-const KEY = () => process.env.GRAPH_API_KEY ?? ''
+export interface SignerAggregate {
+  id: string
+  approvals: string
+  firstApprovalAt: string
+  lastApprovalAt: string
+  chains: string[]
+  safes: string[]
+}
 
-export const graphConfigured = () => Boolean(ENDPOINT())
+const ENDPOINT = () => process.env.SUBGRAPH_URL ?? ''
+
+export const subgraphConfigured = () => Boolean(ENDPOINT())
 
 async function query<T>(q: string, variables: Record<string, unknown> = {}): Promise<T | null> {
   const url = ENDPOINT()
@@ -53,7 +48,7 @@ async function query<T>(q: string, variables: Record<string, unknown> = {}): Pro
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', ...(KEY() ? { authorization: `Bearer ${KEY()}` } : {}) },
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ query: q, variables }),
     })
     const body: any = await res.json()
@@ -62,52 +57,61 @@ async function query<T>(q: string, variables: Record<string, unknown> = {}): Pro
   } catch { return null }
 }
 
-/** One query shape, every protocol. */
-export const AUTHORITY_QUERY = `
-  query Authority($contract: String!, $first: Int!) {
-    authorityRecords(
-      where: { contract: $contract, revokedAt: null }
-      orderBy: grantedAt orderDirection: desc first: $first
-    ) { id contract kind holder role grantedAt revokedAt txHash chain }
-  }`
-
-export const APPROVALS_QUERY = `
-  query Approvals($safe: String!, $first: Int!) {
-    signerApprovals(where: { safe: $safe } orderBy: signedAt orderDirection: desc first: $first) {
-      id safe signer safeTxHash signedAt kind chain
-    }
-  }`
-
+/**
+ * Cross-Safe, cross-chain liveness in ONE query.
+ *
+ * Over RPC this is a binary search per signer per chain, roughly 25 archive reads each. Indexed,
+ * it is a single request. That difference is the entire reason the subgraph exists, and it is the
+ * only way this scales past a handful of Safes.
+ */
 export const SIGNER_ACTIVITY_QUERY = `
-  query SignerActivity($signer: String!) {
-    signerApprovals(where: { signer: $signer } orderBy: signedAt orderDirection: desc first: 1) {
-      signedAt safe chain
+  query SignerActivity($signers: [ID!]!) {
+    signers(where: { id_in: $signers }) {
+      id approvals firstApprovalAt lastApprovalAt chains safes
     }
   }`
 
-export async function authorityFor(contract: string, first = 100) {
-  const d = await query<{ authorityRecords: AuthorityRecord[] }>(AUTHORITY_QUERY, { contract: contract.toLowerCase(), first })
-  return d?.authorityRecords ?? null
+export const SAFE_APPROVALS_QUERY = `
+  query SafeApprovals($safe: String!, $first: Int!) {
+    signerApprovals(
+      where: { safe: $safe }
+      orderBy: signedAt orderDirection: desc first: $first
+    ) { id signer safeTxHash signedAt kind chain }
+  }`
+
+export const META_QUERY = `{ _meta { block { number } hasIndexingErrors } }`
+
+export async function indexedSignerActivity(signers: string[]) {
+  const d = await query<{ signers: SignerAggregate[] }>(SIGNER_ACTIVITY_QUERY, {
+    signers: signers.map((s) => s.toLowerCase()),
+  })
+  if (!d) return null
+  const out = new Map<string, { lastApprovalAt: number; approvals: number; chains: string[]; safes: number }>()
+  for (const s of d.signers) {
+    out.set(s.id.toLowerCase(), {
+      lastApprovalAt: Number(s.lastApprovalAt),
+      approvals: Number(s.approvals),
+      chains: s.chains,
+      safes: s.safes.length,
+    })
+  }
+  return out
 }
 
-export async function approvalsFor(safe: string, first = 500) {
-  const d = await query<{ signerApprovals: SignerApproval[] }>(APPROVALS_QUERY, { safe: safe.toLowerCase(), first })
+export async function indexedApprovals(safe: string, first = 200) {
+  const d = await query<{ signerApprovals: SignerApproval[] }>(SAFE_APPROVALS_QUERY, {
+    safe: `ethereum:${safe.toLowerCase()}`, first,
+  })
   return d?.signerApprovals ?? null
 }
 
-/**
- * Cross-chain liveness in ONE query instead of a binary search per signer per chain.
- * This is the single largest reason the subgraph exists.
- */
-export async function lastApprovalAnywhere(signer: string) {
-  const d = await query<{ signerApprovals: { signedAt: number; safe: string; chain: string }[] }>(
-    SIGNER_ACTIVITY_QUERY, { signer: signer.toLowerCase() },
-  )
-  return d?.signerApprovals?.[0] ?? null
+export async function subgraphHead() {
+  const d = await query<{ _meta: { block: { number: number }; hasIndexingErrors: boolean } }>(META_QUERY)
+  return d?._meta ?? null
 }
 
-export function sourceNote(chain: ChainKey) {
-  return graphConfigured()
-    ? `Subgraph (${chain}) - indexed authority + approval history.`
-    : `RPC fallback (${chain}) - bounded by the provider's 10k-block log window. Set SUBGRAPH_URL for full history.`
+export function sourceNote(chain: string) {
+  return subgraphConfigured()
+    ? `Roll Call subgraph (${chain}) - indexed authority and recovered approvals.`
+    : `RPC fallback (${chain}) - bounded by the provider 10k block log window. Set SUBGRAPH_URL for indexed history.`
 }
