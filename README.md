@@ -126,6 +126,38 @@ error rate."
 
 ---
 
+## Protocols you have heard of
+
+Roll Call starts from a contract people recognise, reads what it holds straight from chain state,
+resolves who can change it, and measures whether that signer set is as large as it claims.
+
+```
+  protocol         role          value      declared  honest  dark  margin  hidden
+  Base             L1 Portal     $1.87B     2/2       2       0     0       0
+  World Chain      L1 Portal     $16M       5/8       4       1     2       1
+  BOB              L1 Portal     $1M        4/6       2       2     0       0
+  Lisk             L1 Portal     $1M        1/1       1       1     -1      1
+  Swan Chain       L1 Portal     $93K       3/4       3       4     -3      0
+```
+
+**$3.82B across 31 contracts. $1.88B of it sits behind a signer set with zero margin** - one lost
+key and that contract can never be upgraded again. Two chains show a negative margin, meaning that
+on the evidence searched the signers still showing activity cannot reach threshold at all.
+
+OP Stack addresses come from Optimism's own `superchain-registry`, so they are verifiable rather
+than curated here. Every address is re-verified at scan time: it must have code, its authority must
+resolve, and its balance is read live.
+
+```bash
+npm run scan:protocols
+```
+
+**What this does not claim.** A signer with no observed activity may still hold their key and simply
+not have been asked to sign. Value is the contract's own balance in ETH plus five major assets, so
+it is a floor rather than a valuation. Authority is followed two hops, so a Safe behind a governance
+timelock and a DAO vote may not be found. Protocols whose authority resolves to a timelock or a DAO
+are reported separately rather than hidden - that is a different governance model, not a weaker one.
+
 ## The leaderboard
 
 A single report answers "is this Safe what it claims to be". It cannot answer the question users
