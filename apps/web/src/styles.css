@@ -287,3 +287,10 @@ code { font-family: var(--mono); font-size: .92em; color: var(--ink-2); }
 .appr-grid { display: grid; grid-template-columns: 108px 1fr; gap: 5px 14px; align-items: start; }
 .appr-lbl { color: var(--ink-4); font-size: 11.5px; font-family: var(--mono); }
 .ev.ok { color: var(--ok); border-color: #1e3d24; background: #0d1a10; }
+
+/* -- address resolution ------------------------------------------ */
+.resolution { border-left: 2px solid var(--info); }
+.resolution.dead-end { border-left-color: var(--ink-4); }
+.res-kind { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--ink-4); margin-bottom: 5px; }
+.res-msg { font-size: 14px; font-weight: 550; }

@@ -6,6 +6,7 @@ import { fetchSafe } from '../../../packages/core/src/extract/safeapi.js'
 import { calibrate } from '../../../packages/core/src/validate.js'
 import { loadLeaderboard } from '../../../packages/core/src/leaderboard.js'
 import { loadProtocolScan } from '../../../packages/core/src/protocolScan.js'
+import { resolveTarget } from '../../../packages/core/src/resolve.js'
 import type { ChainKey } from '../../../packages/core/src/chain.js'
 import { gate, quote, x402Config } from './x402.js'
 import { buildAttestation, submitAttestation, readArchive } from './hcs.js'
@@ -20,6 +21,20 @@ const TTL = 1000 * 60 * 10
 app.get('/health', (_req, res) =>
   res.json({ ok: true, service: 'rollcall', x402: { network: x402Config.network, asset: x402Config.asset, facilitator: x402Config.facilitator }, hcsTopic: process.env.HCS_TOPIC_ID ?? null }),
 )
+
+/**
+ * Free: work out what was pasted.
+ *
+ * Paste a protocol contract and this finds the Safe above it, which is the protocol-first thesis
+ * applied to whatever someone happens to type.
+ */
+app.get('/resolve/:chain/:address', async (req, res) => {
+  try {
+    res.json(await resolveTarget(req.params.chain as ChainKey, req.params.address))
+  } catch (e: any) {
+    res.status(400).json({ error: e?.message ?? 'could not resolve' })
+  }
+})
 
 /** Free: what would this cost, and why. Agents call this before deciding to pay. */
 app.get('/quote/:chain/:address', async (req, res) => {

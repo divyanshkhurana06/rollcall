@@ -31,6 +31,7 @@ export default function App() {
   const [busy, setBusy] = useState(false)
   const [step, setStep] = useState('')
   const [err, setErr] = useState('')
+  const [resolution, setResolution] = useState<any>(null)
 
   useEffect(() => {
     fetch(`${API}/method/calibration`).then((r) => r.json()).then(setCalib).catch(() => {})
@@ -38,8 +39,16 @@ export default function App() {
   }, [])
 
   async function run(target = addr) {
-    setBusy(true); setErr(''); setData(null); setView('report')
+    setBusy(true); setErr(''); setData(null); setResolution(null); setView('report')
     try {
+      // Work out what was pasted before pricing anything. A protocol contract resolves to the Safe
+      // above it, which is the thing worth measuring; an EOA gets told so plainly.
+      setStep('working out what this address is')
+      const r = await (await fetch(`${API}/resolve/${chain}/${target}`)).json()
+      setResolution(r)
+      if (!r.safe) { setBusy(false); setStep(''); return }
+      if (r.safe.toLowerCase() !== target.toLowerCase()) { target = r.safe; setAddr(r.safe) }
+
       setStep('pricing the job by work')
       const q = await (await fetch(`${API}/quote/${chain}/${target}`)).json()
       if (q.error) throw new Error(q.error)
@@ -93,6 +102,24 @@ export default function App() {
 
             {err && <div className="panel err pad" style={{ marginBottom: 24 }}>{err}</div>}
             {busy && <div className="loading"><span className="spin" /><span className="step">{step}</span></div>}
+
+            {resolution && !busy && (
+              <div className={`panel pad resolution ${resolution.safe ? '' : 'dead-end'}`} style={{ marginBottom: 22 }}>
+                <div className="res-kind">{resolution.kind.replace(/-/g, ' ')}</div>
+                <div className="res-msg">{resolution.message}</div>
+                {resolution.hint && <div className="note" style={{ marginTop: 6 }}>{resolution.hint}</div>}
+                {resolution.via && (
+                  <div className="note" style={{ marginTop: 6 }}>
+                    authority path: <code>{resolution.via}</code>
+                  </div>
+                )}
+                {resolution.kind === 'controlled-contract' && (
+                  <div className="note" style={{ marginTop: 6 }}>
+                    measuring <span className="addr">{short(resolution.safe)}</span> instead of the contract you pasted.
+                  </div>
+                )}
+              </div>
+            )}
 
             {r && (
               <div className="fade">
@@ -472,6 +499,12 @@ function Participation({ r }: any) {
           <div className="line"><span>invisible approvers</span><b>{s.invisibleApprovers.length}</b></div>
           <div className="line"><span>non-owner executors</span><b>{s.nonOwnerExecutors.length}</b></div>
         </div>
+        <div className="box">
+          <h4>Search coverage</h4>
+          <div className="line"><span>blocks searched</span><b>{p.coverage?.coveredBlocks?.toLocaleString() ?? '-'}</b></div>
+          <div className="line"><span>ranges unserved</span><b>{p.coverage?.failedRanges ?? '-'}</b></div>
+          <div className="line"><span>complete</span><b>{p.coverage?.complete ? 'yes' : 'no'}</b></div>
+        </div>
       </div>
       <p className="note" style={{ marginTop: 10 }}>
         A Safe transaction is executed by one address paying gas and approved by N owners whose signatures
@@ -479,6 +512,10 @@ function Participation({ r }: any) {
         as <code>tx.from</code>, so an approver with nonce 0 has approved real transactions while remaining
         invisible on every block explorer. The cross-check compares this recovery against the Safe Transaction
         Service, an independent derivation of the same fact, rather than against itself.
+        {p.coverage && !p.coverage.complete && (
+          <> <b>This window is incomplete:</b> {p.coverage.failedRanges} block range(s) could not be served by
+          any endpoint, so finding no approvals here would not be evidence that none exist.</>
+        )}
       </p>
     </div>
   )

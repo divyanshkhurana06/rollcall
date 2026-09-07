@@ -1,4 +1,4 @@
-import { client, type ChainKey } from '../chain.js'
+import { client, lastLogCoverage, type ChainKey, type LogCoverage } from '../chain.js'
 import { readSafeState, fetchExecutions } from './safe.js'
 import { fetchServiceTxs } from './safeapi.js'
 
@@ -40,6 +40,11 @@ export interface ParticipationProof {
   rows: ApprovalRow[]
   /** Nonce per approver, so "invisible to explorers" is verifiable rather than asserted. */
   nonces: Record<string, number>
+  /**
+   * Which blocks were actually searched. Zero approvals with an incomplete search is not evidence
+   * that none exist, and the two must never be reported the same way.
+   */
+  coverage: LogCoverage
   summary: {
     transactionsRecovered: number
     signerSlotsRecovered: number
@@ -64,11 +69,15 @@ export async function proveParticipation(
   if (!state) return null
 
   const execs = await fetchExecutions(chain, state, {
-    lookbackBlocks: opts.lookbackBlocks ?? 120_000n,
+    // Wide enough to reach a Safe that acts monthly rather than daily. Public RPCs cap log
+    // queries at 10k blocks, so this is ~35 sequential requests: slow, but a Safe that only signs
+    // occasionally is exactly the one whose signers look dead.
+    lookbackBlocks: opts.lookbackBlocks ?? 350_000n,
     max: opts.max ?? 12,
   })
 
   // Independent derivation of the same fact, used to cross-check rather than to source.
+  const coverage = lastLogCoverage()
   const service = await fetchServiceTxs(chain, address, 250).catch(() => [])
   const byHash = new Map(service.map((t) => [t.safeTxHash.toLowerCase(), t]))
 
@@ -136,6 +145,7 @@ export async function proveParticipation(
     owners: state.owners,
     rows,
     nonces: Object.fromEntries(nonces),
+    coverage,
     summary: {
       transactionsRecovered: rows.length,
       signerSlotsRecovered: slots,
@@ -147,7 +157,9 @@ export async function proveParticipation(
       nonOwnerExecutors: [...nonOwnerExecutors],
     },
     note:
-      `Approvers recovered from execTransaction calldata for ${rows.length} transaction(s). ` +
+      `Approvers recovered from execTransaction calldata for ${rows.length} transaction(s) ` +
+      `across ${coverage.coveredBlocks.toLocaleString()} blocks searched. ` +
+      (coverage.complete ? '' : `${coverage.failedRanges} range(s) could not be served by any endpoint, so this window is incomplete. `) +
       (crossChecked
         ? `${crossChecked} cross-checked against the Safe Transaction Service, an independent derivation of the same fact.`
         : 'No service records available for this window, so recovery stands alone.'),

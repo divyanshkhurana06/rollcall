@@ -7,13 +7,48 @@ export type ChainKey = 'ethereum' | 'optimism' | 'arbitrum' | 'base' | 'polygon'
  * Liveness is only meaningful if the search space is stated. A signer looks dead on one chain
  * and is busy on another, so every liveness claim Roll Call makes names the chains it searched.
  */
-export const CHAINS: Record<ChainKey, { chain: any; rpc: string; label: string }> = {
-  ethereum: { chain: mainnet, rpc: env('RPC_ETHEREUM', 'https://eth.drpc.org'), label: 'Ethereum' },
-  optimism: { chain: optimism, rpc: env('RPC_OPTIMISM', 'https://optimism.drpc.org'), label: 'Optimism' },
-  arbitrum: { chain: arbitrum, rpc: env('RPC_ARBITRUM', 'https://arbitrum.drpc.org'), label: 'Arbitrum' },
-  base: { chain: base, rpc: env('RPC_BASE', 'https://base.drpc.org'), label: 'Base' },
-  polygon: { chain: polygon, rpc: env('RPC_POLYGON', 'https://polygon.drpc.org'), label: 'Polygon' },
-  gnosis: { chain: gnosis, rpc: env('RPC_GNOSIS', 'https://gnosis.drpc.org'), label: 'Gnosis' },
+/**
+ * Several endpoints per chain, because one is not enough.
+ *
+ * Public RPCs fail in ways that look like data: a provider that cannot route a request returns an
+ * error, and a log walk that swallows it reports "no events found". That is the difference between
+ * "this signer never approved anything" and "we could not look", and the two must never be
+ * confused - the same reason liveness distinguishes dark from indeterminate.
+ *
+ * So every read tries the list in order, and a range that no endpoint could serve is recorded as a
+ * coverage gap rather than as an absence.
+ */
+export const CHAINS: Record<ChainKey, { chain: any; rpc: string; rpcs: string[]; label: string }> = {
+  ethereum: {
+    chain: mainnet, label: 'Ethereum',
+    rpc: env('RPC_ETHEREUM', 'https://eth.drpc.org'),
+    rpcs: [env('RPC_ETHEREUM', 'https://eth.drpc.org'), 'https://rpc.mevblocker.io', 'https://eth.drpc.org', 'https://rpc.flashbots.net'],
+  },
+  optimism: {
+    chain: optimism, label: 'Optimism',
+    rpc: env('RPC_OPTIMISM', 'https://optimism.drpc.org'),
+    rpcs: [env('RPC_OPTIMISM', 'https://optimism.drpc.org'), 'https://mainnet.optimism.io'],
+  },
+  arbitrum: {
+    chain: arbitrum, label: 'Arbitrum',
+    rpc: env('RPC_ARBITRUM', 'https://arbitrum.drpc.org'),
+    rpcs: [env('RPC_ARBITRUM', 'https://arbitrum.drpc.org'), 'https://arb1.arbitrum.io/rpc'],
+  },
+  base: {
+    chain: base, label: 'Base',
+    rpc: env('RPC_BASE', 'https://base.drpc.org'),
+    rpcs: [env('RPC_BASE', 'https://base.drpc.org'), 'https://mainnet.base.org'],
+  },
+  polygon: {
+    chain: polygon, label: 'Polygon',
+    rpc: env('RPC_POLYGON', 'https://polygon.drpc.org'),
+    rpcs: [env('RPC_POLYGON', 'https://polygon.drpc.org'), 'https://polygon-rpc.com'],
+  },
+  gnosis: {
+    chain: gnosis, label: 'Gnosis',
+    rpc: env('RPC_GNOSIS', 'https://gnosis.drpc.org'),
+    rpcs: [env('RPC_GNOSIS', 'https://gnosis.drpc.org'), 'https://rpc.gnosischain.com'],
+  },
 }
 
 function env(key: string, fallback: string) {
@@ -49,36 +84,67 @@ export async function windowedLogs(
   params: { address?: `0x${string}`; topics: (string | string[] | null)[]; fromBlock: bigint; toBlock: bigint },
   opts: { window?: bigint; max?: number } = {},
 ): Promise<RawLog[]> {
-  const c = client(key)
   const max = opts.max ?? 400
   let window = opts.window ?? 40_000n
   const out: RawLog[] = []
   let to = params.toBlock
+  let covered = 0n
+  let failed = 0
 
   while (to > params.fromBlock && out.length < max) {
     const from = to - window > params.fromBlock ? to - window : params.fromBlock
-    const ok = await tryRange(c, params, from, to, out)
+    const ok = await tryRange(key, params, from, to, out)
     if (!ok && window > 1_000n) {
       window = window / 4n > 0n ? window / 4n : 1_000n
       continue // retry the same `to` with a smaller window
     }
+    if (ok) covered += to - from
+    else failed++
     to = from - 1n
+  }
+
+  const requested = params.toBlock - params.fromBlock
+  lastCoverage = {
+    requestedBlocks: Number(requested),
+    coveredBlocks: Number(covered),
+    failedRanges: failed,
+    complete: failed === 0,
   }
   return out.slice(0, max).map(normalise)
 }
 
-async function tryRange(c: PublicClient, params: any, from: bigint, to: bigint, out: any[]) {
+/** Ask every endpoint for the chain before giving up on a range. */
+async function tryRange(key: ChainKey, params: any, from: bigint, to: bigint, out: any[]) {
   const filter: any = { fromBlock: hex(from), toBlock: hex(to) }
   if (params.address) filter.address = params.address
   if (params.topics?.length) filter.topics = params.topics
-  try {
-    const logs: any[] = await (c as any).request({ method: 'eth_getLogs', params: [filter] })
-    out.push(...logs)
-    return true
-  } catch {
-    return false
+
+  for (const url of [...new Set(CHAINS[key].rpcs)]) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_getLogs', params: [filter] }),
+      })
+      const body: any = await res.json()
+      if (body.error) continue
+      out.push(...(body.result ?? []))
+      return true
+    } catch { /* next endpoint */ }
   }
+  return false
 }
+
+/** Ranges no endpoint could serve. An empty result with gaps is not evidence of absence. */
+export interface LogCoverage {
+  requestedBlocks: number
+  coveredBlocks: number
+  failedRanges: number
+  complete: boolean
+}
+
+let lastCoverage: LogCoverage = { requestedBlocks: 0, coveredBlocks: 0, failedRanges: 0, complete: true }
+export const lastLogCoverage = () => lastCoverage
 
 const hex = (n: bigint) => (`0x` + n.toString(16)) as `0x${string}`
 
