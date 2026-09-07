@@ -22,7 +22,7 @@ const SAMPLES = [
 ]
 
 export default function App() {
-  const [view, setView] = useState<'board' | 'report'>('board')
+  const [view, setView] = useState<'protocols' | 'board' | 'report'>('protocols')
   const [addr, setAddr] = useState(SAMPLES[0].addr)
   const [chain, setChain] = useState('ethereum')
   const [data, setData] = useState<any>(null)
@@ -63,7 +63,8 @@ export default function App() {
           <div className="tag">Who can take everything, how fast, and are they still awake?</div>
           <div className="mast-spacer" />
           <div className="tabs">
-            <button className={view === 'board' ? 'tab on' : 'tab'} onClick={() => setView('board')}>Leaderboard</button>
+            <button className={view === 'protocols' ? 'tab on' : 'tab'} onClick={() => setView('protocols')}>Protocols</button>
+            <button className={view === 'board' ? 'tab on' : 'tab'} onClick={() => setView('board')}>All Safes</button>
             <button className={view === 'report' ? 'tab on' : 'tab'} onClick={() => setView('report')}>Report</button>
           </div>
           <div className="mast-meta">v{r?.header.methodVersion ?? '1.0.0'}</div>
@@ -71,6 +72,7 @@ export default function App() {
       </header>
 
       <div className="wrap">
+        {view === 'protocols' && <Protocols onInspect={(a) => { setAddr(a); run(a) }} />}
         {view === 'board' && <Board onInspect={(a) => { setAddr(a); run(a) }} health={health} />}
 
         {view === 'report' && (
@@ -114,6 +116,109 @@ export default function App() {
         )}
       </div>
     </>
+  )
+}
+
+/* ============================ protocols ============================ */
+/** Chain-state balances, so no unit guard is needed - unlike subgraph TVL, which gets `usd()`. */
+const held = (n: number) =>
+  n >= 1e9 ? `$${(n / 1e9).toFixed(2)}B` : n >= 1e6 ? `$${(n / 1e6).toFixed(0)}M`
+  : n >= 1e3 ? `$${(n / 1e3).toFixed(0)}K` : `$${Math.round(n)}`
+
+function Protocols({ onInspect }: { onInspect: (a: string) => void }) {
+  const [scan, setScan] = useState<any>(null)
+  const [err, setErr] = useState('')
+  const [showAll, setShowAll] = useState(false)
+
+  useEffect(() => {
+    fetch(`${API}/protocols`).then(async (r) => {
+      const b = await r.json()
+      if (b.error) setErr(b.error); else setScan(b)
+    }).catch((e) => setErr(String(e)))
+  }, [])
+
+  if (err) return <div className="panel err pad" style={{ marginTop: 30 }}>{err}</div>
+  if (!scan) return <div className="loading"><span className="spin" /><span className="step">loading protocol scan</span></div>
+
+  const measured = scan.rows.filter((r: any) => r.status === 'measured')
+  const noSafe = scan.rows.filter((r: any) => r.status === 'no-safe')
+  const shown = showAll ? measured : measured.filter((r: any) => r.valueUsd > 0)
+  const frozen = measured.filter((r: any) => r.marginToFrozen !== null && r.marginToFrozen < 0)
+
+  return (
+    <div className="fade">
+      <div className="hero">
+        <h1>Who can change the thing <span>holding your money?</span></h1>
+        <p>
+          Roll Call starts from protocols you have heard of, reads what each contract holds straight from
+          chain state, resolves who can change it, and measures whether that signer set is as large as it
+          claims. <b>{held(scan.totalValueUsd)}</b> across <b>{scan.scanned}</b> contracts,
+          {' '}<b>{scan.measured}</b> of them with a Safe in the authority path.
+        </p>
+        <div className="pills">
+          <div className="pill crit"><div className="n">{held(scan.valueOneKeyFromFrozen)}</div>
+            <div className="l">behind a signer set with zero margin</div></div>
+          <div className="pill warn"><div className="n">{held(scan.valueBehindWeakQuorum)}</div>
+            <div className="l">honest quorum below declared</div></div>
+          {frozen.length > 0 && <div className="pill crit"><div className="n">{frozen.length}</div>
+            <div className="l">cannot reach quorum on evidence searched</div></div>}
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="proto-head">
+          <div>Protocol</div><div>Contract</div><div>Value held</div><div>Declared</div>
+          <div>Honest</div><div>Dark</div><div>Margin</div><div>Hidden</div><div />
+        </div>
+        {shown.map((r: any) => {
+          const frozenRow = r.marginToFrozen !== null && r.marginToFrozen < 0
+          const tight = r.marginToFrozen === 0
+          return (
+            <div className="proto-row" key={r.address} onClick={() => r.safe && onInspect(r.safe)}>
+              <div className="pname">{r.protocol}</div>
+              <div className="prole">{r.role}</div>
+              <div className={`num ${r.valueUsd >= 1e9 ? 'big' : ''}`}>{held(r.valueUsd)}</div>
+              <div className="num">{r.threshold} of {r.owners}</div>
+              <div className={`num ${r.gap > 0 ? 'warnp' : ''}`}>{r.honestQuorum}</div>
+              <div className={`num ${r.darkSigners > 0 ? 'warnp' : ''}`}>{r.darkSigners}</div>
+              <div className={`num ${frozenRow ? 'critp' : tight ? 'warnp' : ''}`}
+                   title={frozenRow ? 'On the evidence searched, the signers still showing activity cannot reach threshold'
+                     : tight ? 'One more signer going dark and this Safe can no longer act' : ''}>
+                {r.marginToFrozen}</div>
+              <div className="num">{r.invisibleSigners}</div>
+              <div className="rowbtn">{r.safe ? 'inspect' : ''}</div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div style={{ display: 'flex', gap: 10, marginTop: 10, alignItems: 'center' }}>
+        <button className="chip" onClick={() => setShowAll(!showAll)}>
+          {showAll ? 'hide empty contracts' : `show ${measured.length - shown.length} more with no balance`}
+        </button>
+        <span className="note">{noSafe.length} contracts resolve to a timelock, DAO or EOA rather than a Safe.</span>
+      </div>
+
+      <p className="note" style={{ marginTop: 14 }}>
+        <b>Margin</b> is how many more signers can go dark before the remaining ones cannot reach threshold.
+        Zero means one lost key ends it; negative means, on the evidence searched, it has already happened.
+        <b> Hidden</b> counts signers with nonce 0, who have never sent a transaction and so appear inactive
+        on every block explorer.
+      </p>
+      <p className="note" style={{ marginTop: 8 }}>
+        <b>What this does not claim.</b> A signer with no observed activity may still hold their key and
+        simply not have been asked to sign. Value is the contract's own balance in ETH and five major
+        assets, so it is a floor rather than a valuation. Authority is followed two hops, so a Safe behind
+        a governance timelock and a DAO vote may not be found. Protocols whose authority resolves to a
+        timelock or DAO are reported separately, not hidden: that is a different governance model, not a
+        weaker one.
+      </p>
+      <p className="note" style={{ marginTop: 8 }}>
+        {scan.assumptions.map((a: string, i: number) => <span key={i}>{a} </span>)}
+        Scanned {new Date(scan.generatedAt * 1000).toISOString().slice(0, 16).replace('T', ' ')} UTC at ETH ${scan.ethPriceUsd.toFixed(0)}.
+        OP Stack addresses come from Optimism's superchain-registry, so they are verifiable rather than curated by us.
+      </p>
+    </div>
   )
 }
 

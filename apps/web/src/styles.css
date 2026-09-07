@@ -264,3 +264,18 @@ code { font-family: var(--mono); font-size: .92em; color: var(--ink-2); }
 .step { font-family: var(--mono); font-size: 12px; }
 .fade { animation: fade .3s ease both; }
 @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* -- protocols --------------------------------------------------- */
+.proto-head, .proto-row {
+  display: grid;
+  grid-template-columns: 128px 168px 92px 82px 62px 52px 62px 60px 1fr;
+  gap: 10px; align-items: center; padding: 10px 19px;
+}
+.proto-head { color: var(--ink-4); font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  border-bottom: 1px solid var(--line); }
+.proto-row { border-top: 1px solid var(--line-soft); cursor: pointer; transition: background .13s; }
+.proto-row:hover { background: var(--panel-2); }
+.pname { font-weight: 600; font-size: 13.5px; }
+.prole { color: var(--ink-3); font-size: 12px; }
+.proto-row .num { font-family: var(--mono); font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.proto-row .num.big { color: var(--ink); font-weight: 600; }
