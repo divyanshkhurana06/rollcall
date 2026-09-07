@@ -6,6 +6,7 @@ import { timingDependence, type TimingPair } from './stats/timing.js'
 import { quorumCurve, robustness, type QuorumPoint } from './stats/quorum.js'
 import { signerLiveness, reachability, type SignerLiveness } from './stats/liveness.js'
 import { accountExposure, graphConfigured, STANDARDIZED, type Exposure } from './exposure.js'
+import { proveParticipation, type ParticipationProof } from './extract/participation.js'
 
 export const METHOD_VERSION = '1.0.0'
 
@@ -68,6 +69,13 @@ export interface RollCallReport {
   reachability: ReturnType<typeof reachability>
   /** What money sits behind these keys. One query shape, N standardized protocols. */
   exposure: Exposure | null
+  /**
+   * Per transaction approver recovery from execTransaction calldata.
+   *
+   * This is the evidence for every liveness claim in the report: it names which addresses actually
+   * approved, including ones that have never sent a transaction and so look dead on any explorer.
+   */
+  participation: ParticipationProof | null
   tested: { independence: PairDependence[]; timing: TimingPair[] }
   inferred: { quorumCurve: QuorumPoint[]; robustness: ReturnType<typeof robustness> }
   findings: Finding[]
@@ -82,6 +90,9 @@ export interface BuildOpts {
   seed?: number
   darkAfterDays?: number
   label?: string
+  /** Recovering approvers costs RPC calls; the population scan turns it off. */
+  proveParticipation?: boolean
+  participationSample?: number
 }
 
 export async function buildReport(address: string, opts: BuildOpts = {}): Promise<RollCallReport> {
@@ -133,6 +144,12 @@ export async function buildReport(address: string, opts: BuildOpts = {}): Promis
   // Authority means nothing without exposure. A dark 2-of-9 over an empty wallet is trivia.
   const exposure = await accountExposure(safe.address)
 
+  // Recovered approvals, shown rather than merely used: the participation matrix above comes from
+  // the Safe Transaction Service, and this is the independent derivation that proves it.
+  const participation = opts.proveParticipation === false
+    ? null
+    : await proveParticipation(chain, safe.address, { max: opts.participationSample ?? 6 }).catch(() => null)
+
   const report: RollCallReport = {
     target: { address: safe.address, chain, label: opts.label },
     header: {
@@ -164,6 +181,7 @@ export async function buildReport(address: string, opts: BuildOpts = {}): Promis
     liveness,
     reachability: reach,
     exposure,
+    participation,
     tested: { independence, timing },
     inferred: { quorumCurve: curve, robustness: rob },
     findings: [],
@@ -177,6 +195,7 @@ export async function buildReport(address: string, opts: BuildOpts = {}): Promis
         'Module-executed transactions bypass owner signatures entirely and are out of scope for independence.',
         'Timing dependence cannot distinguish one operator from two people in the same meeting.',
         `Exposure covers ${STANDARDIZED.length} standardized deployments only. A Safe with no account there may still hold value elsewhere.`,
+        'Approver recovery covers a recent block window, not the Safe\'s whole history, because public RPCs cap log queries at 10k blocks.',
         'Confirmations recorded within 5s of execution are treated as undated: signatures gathered offchain and posted together would otherwise register as perfect timing coupling.',
       ],
     },

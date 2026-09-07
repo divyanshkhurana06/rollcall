@@ -31,6 +31,9 @@ export interface ProtocolRow {
   /** The Safe that can change it, when there is one. */
   safe: string | null
   authorityPath: string
+  /** Hours from a malicious signature to the change landing. Zero means the next block. */
+  timeToHarmHours: number | null
+  timeToHarmMeasured: boolean | null
   threshold: number | null
   owners: number | null
   honestQuorum: number | null
@@ -56,6 +59,8 @@ export interface ProtocolScan {
   totalValueUsd: number
   valueBehindWeakQuorum: number
   valueOneKeyFromFrozen: number
+  /** Value guarded by a Safe with no timelock between it and the contract. */
+  valueWithNoDelay: number
   rows: ProtocolRow[]
   assumptions: string[]
 }
@@ -82,7 +87,9 @@ export async function scanProtocols(opts: {
   for (const t of targets) {
     try {
       const [surface, value] = await Promise.all([
-        resolveControlSurface(chain, t.address),
+        // Roles are skipped in the population scan: 40 sequential log requests per contract
+        // over a public RPC would take hours and still only cover a recent window.
+        resolveControlSurface(chain, t.address, { includeRoles: false }),
         valueAtRisk(chain, t.address, price),
       ])
 
@@ -90,6 +97,8 @@ export async function scanProtocols(opts: {
         protocol: t.protocol, role: t.role, address: t.address, category: t.category, source: t.source,
         valueUsd: value.totalUsd, nativeEth: value.nativeEth,
         authorityPath: surface.holders.map((h) => h.kind).join(' -> ') || 'none',
+        timeToHarmHours: surface.timeToHarm?.hours ?? null,
+        timeToHarmMeasured: surface.timeToHarm?.measured ?? null,
       }
 
       const safe = surface.safes[0] ?? null
@@ -110,6 +119,7 @@ export async function scanProtocols(opts: {
         r = await buildReport(safe, {
           chain, livenessChains: [chain],
           maxTxs: opts.maxTxs ?? 120, permutations: opts.permutations ?? 2500,
+          proveParticipation: false,
         })
         reportCache.set(safe.toLowerCase(), r)
       }
@@ -139,6 +149,7 @@ export async function scanProtocols(opts: {
       rows.push({
         protocol: t.protocol, role: t.role, address: t.address, category: t.category, source: t.source,
         valueUsd: 0, nativeEth: 0, safe: null, authorityPath: 'unreadable',
+        timeToHarmHours: null, timeToHarmMeasured: null,
         threshold: null, owners: null, honestQuorum: null, gap: null, robust: null,
         darkSigners: null, liveSigners: null, marginToFrozen: null, canStillReachThreshold: null,
         dependentPairs: null, invisibleSigners: null, txWindow: null, digest: null, status: 'unreadable',
@@ -163,10 +174,12 @@ export async function scanProtocols(opts: {
     totalValueUsd: rows.reduce((s, r) => s + r.valueUsd, 0),
     valueBehindWeakQuorum: measured.filter((r) => (r.gap ?? 0) > 0).reduce((s, r) => s + r.valueUsd, 0),
     valueOneKeyFromFrozen: measured.filter((r) => (r.marginToFrozen ?? 99) <= 0).reduce((s, r) => s + r.valueUsd, 0),
+    valueWithNoDelay: measured.filter((r) => r.timeToHarmHours === 0).reduce((s, r) => s + r.valueUsd, 0),
     rows,
     assumptions: [
       'Value is the contract balance in native ETH plus five major assets, read from chain state. It is a floor, not a valuation.',
       'Authority is followed two hops, so a Safe behind a ProxyAdmin is found but a Safe behind a governance timelock and a DAO vote may not be.',
+      'AccessControl role holders are not scanned in the population pass, only in a single contract report. A contract shown with no Safe may still grant a privileged role to one.',
       'A protocol with no Safe is reported, not hidden. Authority resolving to a timelock or DAO is a different governance model, not a weaker one.',
     ],
   }
