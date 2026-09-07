@@ -38,10 +38,35 @@ exact approver-set match                     12/12
 unresolved signature words                   0
 ```
 
-**Six of that Safe's eight signers have `nonce 0`.** They have never sent a transaction in their
-lives. Etherscan shows them as dormant. They signed two days ago.
+**Three of the approvers on that Safe have `nonce 0`.** They have never sent a transaction. Etherscan
+shows them as dormant. They approved transactions this week, and the address that paid the gas is not
+even an owner.
+
+### What the recovery does not cover
+
+Liveness searches the chains named in each report header, which defaults to Ethereum alone - not
+"every chain". Approver recovery covers a recent block window rather than a Safe's whole history,
+because public RPCs cap log queries at 10,000 blocks. Both limits are printed in the report rather
+than left implied.
 
 ---
+
+## Where this sits against existing tools
+
+Multisig security analysis is not a new category. yAudit's Multisig Security Checker already does
+Safe introspection, threshold analysis and signing-speed heuristics, and there are several tools
+watching Safe configuration changes. Roll Call is not the first thing to look at a multisig.
+
+What is different here is the direction and the evidence:
+
+- **Direction.** Existing tools start from a Safe. Roll Call starts from a protocol people have
+  heard of, resolves who can change it, and attaches what that contract holds. Closer to L2Beat for
+  control risk than to a Safe dashboard.
+- **Participation, not activity.** "Has this address sent transactions" is answerable from any
+  explorer and is the wrong question. "Has this address approved anything" is answerable only from
+  the signature blob, and it is the question that matters.
+- **Evidence over scores.** There is no composite "collusion distance". Dependence is reported as a
+  permutation p-value with the raw counts beside it, and the test's false-positive rate is published.
 
 ## Every number belongs to a tier
 
