@@ -16,7 +16,8 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { buildReport } from '../../core/src/report.js'
 import { fetchSafe } from '../../core/src/extract/safeapi.js'
 import { calibrate } from '../../core/src/validate.js'
-import { sourceNote, graphConfigured } from '../../core/src/graph.js'
+import { sourceNote, subgraphConfigured } from '../../core/src/graph.js'
+import { graphConfigured as gatewayConfigured, STANDARDIZED } from '../../core/src/exposure.js'
 import type { ChainKey } from '../../core/src/chain.js'
 
 const CHAINS = ['ethereum', 'base', 'arbitrum', 'optimism', 'polygon', 'gnosis']
@@ -122,7 +123,7 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
             robustness: r.inferred.robustness.verdict,
           },
           findings: r.findings.map((f: any) => ({ tier: f.tier, severity: f.severity, title: f.title, caveat: f.caveat })),
-          method: { version: r.header.methodVersion, digest: r.header.inputDigest, seed: r.header.seed, source: sourceNote(chain), graphIndexed: graphConfigured() },
+          method: { version: r.header.methodVersion, digest: r.header.inputDigest, seed: r.header.seed, source: sourceNote(chain), subgraphIndexed: subgraphConfigured(), standardizedDeployments: gatewayConfigured() ? STANDARDIZED.length : 0 },
           limitations: r.coverage.limitations,
         })
       }
