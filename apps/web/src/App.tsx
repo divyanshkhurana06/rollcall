@@ -105,6 +105,7 @@ export default function App() {
                     <Exposure r={r} />
                   </div>
                 </div>
+                <Participation r={r} />
                 <Independence r={r} />
                 <Quorum r={r} />
                 <Findings r={r} />
@@ -160,6 +161,8 @@ function Protocols({ onInspect }: { onInspect: (a: string) => void }) {
             <div className="l">behind a signer set with zero margin</div></div>
           <div className="pill warn"><div className="n">{held(scan.valueBehindWeakQuorum)}</div>
             <div className="l">honest quorum below declared</div></div>
+          {scan.valueWithNoDelay > 0 && <div className="pill crit"><div className="n">{held(scan.valueWithNoDelay)}</div>
+            <div className="l">no timelock: effective next block</div></div>}
           {frozen.length > 0 && <div className="pill crit"><div className="n">{frozen.length}</div>
             <div className="l">cannot reach quorum on evidence searched</div></div>}
         </div>
@@ -168,7 +171,7 @@ function Protocols({ onInspect }: { onInspect: (a: string) => void }) {
       <div className="panel">
         <div className="proto-head">
           <div>Protocol</div><div>Contract</div><div>Value held</div><div>Declared</div>
-          <div>Honest</div><div>Dark</div><div>Margin</div><div>Hidden</div><div />
+          <div>Honest</div><div>Dark</div><div>Margin</div><div>Delay</div><div />
         </div>
         {shown.map((r: any) => {
           const frozenRow = r.marginToFrozen !== null && r.marginToFrozen < 0
@@ -185,7 +188,11 @@ function Protocols({ onInspect }: { onInspect: (a: string) => void }) {
                    title={frozenRow ? 'On the evidence searched, the signers still showing activity cannot reach threshold'
                      : tight ? 'One more signer going dark and this Safe can no longer act' : ''}>
                 {r.marginToFrozen}</div>
-              <div className="num">{r.invisibleSigners}</div>
+              <div className={`num ${r.timeToHarmHours === 0 ? 'critp' : ''}`}
+                   title={r.timeToHarmHours === 0
+                     ? 'No timelock in the shortest path: a signature takes effect in the next block'
+                     : `${r.timeToHarmHours}h between a signature and the change landing`}>
+                {r.timeToHarmHours === null ? '-' : r.timeToHarmHours === 0 ? 'none' : `${r.timeToHarmHours}h`}</div>
               <div className="rowbtn">{r.safe ? 'inspect' : ''}</div>
             </div>
           )
@@ -202,8 +209,8 @@ function Protocols({ onInspect }: { onInspect: (a: string) => void }) {
       <p className="note" style={{ marginTop: 14 }}>
         <b>Margin</b> is how many more signers can go dark before the remaining ones cannot reach threshold.
         Zero means one lost key ends it; negative means, on the evidence searched, it has already happened.
-        <b> Hidden</b> counts signers with nonce 0, who have never sent a transaction and so appear inactive
-        on every block explorer.
+        <b> Delay</b> is the time between a malicious signature and the change landing, read from the
+        timelock in the path. <b>none</b> means there is no timelock and therefore no reaction window.
       </p>
       <p className="note" style={{ marginTop: 8 }}>
         <b>What this does not claim.</b> A signer with no observed activity may still hold their key and
@@ -401,6 +408,78 @@ function Exposure({ r }: any) {
           </div>
         </>}
       </div>
+    </div>
+  )
+}
+
+function Participation({ r }: any) {
+  const p = r.participation
+  if (!p || !p.rows.length) return null
+  const s = p.summary
+  return (
+    <div className="sec tier-observed">
+      <div className="sec-head"><div className="sec-title">Recovered approvals</div>
+        <div className="sec-sub">who actually approved, decoded from execTransaction calldata</div></div>
+      <div className="panel">
+        {p.rows.slice(0, 5).map((row: any) => (
+          <div className="appr" key={row.txHash}>
+            <div className="appr-top">
+              <a href={`https://etherscan.io/tx/${row.txHash}`} target="_blank" rel="noreferrer" className="addr">{short(row.txHash)}</a>
+              <span className="note">{new Date(row.timestamp * 1000).toISOString().slice(0, 16).replace('T', ' ')}</span>
+              {row.agreement !== 'unavailable' && (
+                <span className={`ev ${row.agreement === 'exact' ? 'ok' : ''}`}>
+                  {row.agreement} match vs Safe service
+                </span>
+              )}
+            </div>
+            <div className="appr-grid">
+              <div className="appr-lbl">gas paid by</div>
+              <div className="addr">{short(row.executor)}
+                {!p.owners.some((o: string) => o.toLowerCase() === row.executor.toLowerCase()) &&
+                  <span className="flag" style={{ marginLeft: 8 }}>not an owner</span>}</div>
+              <div className="appr-lbl">approved by</div>
+              <div>
+                {row.approvers.map((a: any) => {
+                  const n = p.nonces?.[a.signer.toLowerCase()]
+                  return (
+                    <div key={a.signer} style={{ marginBottom: 3 }}>
+                      <span className="addr">{short(a.signer)}</span>
+                      <span className="note" style={{ marginLeft: 8 }}>{a.kind}</span>
+                      {n === 0 && <span className="flag" style={{ marginLeft: 8 }}>nonce 0 - has never sent a transaction</span>}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="boxes" style={{ marginTop: 10 }}>
+        <div className="box">
+          <h4>Recovery</h4>
+          <div className="line"><span>transactions</span><b>{s.transactionsRecovered}</b></div>
+          <div className="line"><span>approvals recovered</span><b>{s.signerSlotsRecovered}</b></div>
+          <div className="line"><span>unresolved words</span><b>{s.unresolvedWords}</b></div>
+        </div>
+        <div className="box">
+          <h4>Cross-check</h4>
+          <div className="line"><span>compared</span><b>{s.crossChecked}</b></div>
+          <div className="line"><span>exact set match</span><b>{s.exactSetMatches}/{s.crossChecked}</b></div>
+          <div className="line"><span>agreement</span><b>{(s.agreementRate * 100).toFixed(1)}%</b></div>
+        </div>
+        <div className="box">
+          <h4>What this shows</h4>
+          <div className="line"><span>invisible approvers</span><b>{s.invisibleApprovers.length}</b></div>
+          <div className="line"><span>non-owner executors</span><b>{s.nonOwnerExecutors.length}</b></div>
+        </div>
+      </div>
+      <p className="note" style={{ marginTop: 10 }}>
+        A Safe transaction is executed by one address paying gas and approved by N owners whose signatures
+        are packed into <code>execTransaction</code> calldata. Those approvers emit no event and never appear
+        as <code>tx.from</code>, so an approver with nonce 0 has approved real transactions while remaining
+        invisible on every block explorer. The cross-check compares this recovery against the Safe Transaction
+        Service, an independent derivation of the same fact, rather than against itself.
+      </p>
     </div>
   )
 }
