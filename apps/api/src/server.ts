@@ -5,6 +5,7 @@ import { buildReport } from '../../../packages/core/src/report.js'
 import { fetchSafe } from '../../../packages/core/src/extract/safeapi.js'
 import { calibrate } from '../../../packages/core/src/validate.js'
 import { loadLeaderboard } from '../../../packages/core/src/leaderboard.js'
+import { loadProtocolScan } from '../../../packages/core/src/protocolScan.js'
 import type { ChainKey } from '../../../packages/core/src/chain.js'
 import { gate, quote, x402Config } from './x402.js'
 import { buildAttestation, submitAttestation, readArchive } from './hcs.js'
@@ -37,6 +38,19 @@ app.get('/quote/:chain/:address', async (req, res) => {
 
 /** Free: the calibration numbers. Published so the metrics can be checked, not trusted. */
 app.get('/method/calibration', (_req, res) => res.json(calibrate({ trials: 20, permutations: 800 })))
+
+/**
+ * Free: the protocol scan.
+ *
+ * The question a user arrives with is not "what is 0x93a7" but "is the thing holding my money
+ * controlled by as many people as it claims". This answers that against protocols they have heard
+ * of, with the value read from chain state.
+ */
+app.get('/protocols', (_req, res) => {
+  const scan = loadProtocolScan()
+  if (!scan) return res.status(404).json({ error: 'no protocol scan cached yet - run: npm run scan:protocols' })
+  res.json(scan)
+})
 
 /**
  * Free: the leaderboard.
