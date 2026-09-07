@@ -6,3 +6,6 @@ subgraph/generated/
 subgraph/build/
 *.log
 cre/*/node_modules/
+cre/.env
+cre/*/.cre_build_tmp.*
+cre/*/dist/

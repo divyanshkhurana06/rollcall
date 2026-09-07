@@ -3,12 +3,17 @@
   "version": "1.0.0",
   "main": "dist/main.js",
   "private": true,
-  "scripts": { "typecheck": "tsc --noEmit", "test": "node --test" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test"
+  },
   "license": "UNLICENSED",
   "dependencies": {
-    "@chainlink/cre-sdk": "1.18.0",
+    "@chainlink/cre-sdk": "1.19.1",
     "viem": "2.34.0",
     "zod": "3.25.76"
   },
-  "devDependencies": { "typescript": "5.9.3" }
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
 }

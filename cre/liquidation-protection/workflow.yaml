@@ -1,3 +1,11 @@
+simulation-settings:
+  user-workflow:
+    workflow-name: "rollcall-liquidation-protection"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.staging.json"
+    secrets-path: "../secrets.yaml"
+
 staging-settings:
   user-workflow:
     workflow-name: "rollcall-liquidation-protection"

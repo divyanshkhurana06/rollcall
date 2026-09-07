@@ -1,5 +1,5 @@
 {
-  "schedule": "0 0 */6 * * *",
+  "schedule": "0 */1 * * * *",
   "rollcallApiUrl": "https://postman-echo.com/get",
   "apiKeySecretId": "ROLLCALL_API_KEY",
   "watchlistSecretId": "ROLLCALL_WATCHLIST"

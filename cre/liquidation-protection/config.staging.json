@@ -1,5 +1,5 @@
 {
-  "schedule": "0 */5 * * * *",
+  "schedule": "0 */1 * * * *",
   "priceUrl": "https://postman-echo.com/get",
   "positionUrl": "https://postman-echo.com/get",
   "rollcallApiUrl": "https://postman-echo.com/get",

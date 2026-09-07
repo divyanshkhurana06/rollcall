@@ -8,6 +8,11 @@
 #   liquidation-protection   protects a leveraged position, using both market
 #                            movement and control surface degradation as triggers
 #
+simulation-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
+
 staging-settings:
   rpcs:
     - chain-name: ethereum-testnet-sepolia
