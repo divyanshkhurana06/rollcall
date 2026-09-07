@@ -19,7 +19,8 @@
     "agent": "tsx packages/agent/src/pay.ts",
     "cover": "tsx packages/cover/src/issue.ts",
     "manifest": "tsx subgraph/generate-manifest.ts",
-    "protect": "tsx cre/simulate.ts"
+    "protect": "tsx cre/simulate.ts",
+    "scan:protocols": "tsx packages/core/src/scan-protocols.ts"
   },
   "dependencies": {
     "@chainlink/cre-sdk": "^1.19.1",
