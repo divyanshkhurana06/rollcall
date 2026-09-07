@@ -1,5 +1,0 @@
-{
-  "consumerAddress": "0x0000000000000000000000000000000000000000",
-  "chainSelector": "ethereum-testnet-sepolia",
-  "schedule": "0 */6 * * *"
-}

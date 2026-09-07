@@ -1,0 +1,9 @@
+{
+  "schedule": "0 */5 * * * *",
+  "priceUrl": "https://postman-echo.com/get",
+  "positionUrl": "https://postman-echo.com/get",
+  "rollcallApiUrl": "https://postman-echo.com/get",
+  "market": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+  "apiKeySecretId": "ROLLCALL_API_KEY",
+  "rulesSecretId": "PROTECTION_RULES"
+}

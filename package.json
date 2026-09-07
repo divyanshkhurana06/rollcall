@@ -22,6 +22,7 @@
     "protect": "tsx cre/simulate.ts"
   },
   "dependencies": {
+    "@chainlink/cre-sdk": "^1.19.1",
     "@hashgraph/asset-tokenization-sdk": "^8.0.0",
     "@hashgraph/sdk": "^2.81.0",
     "@modelcontextprotocol/sdk": "^1.30.0",

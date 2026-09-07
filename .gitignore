@@ -5,3 +5,4 @@ dist/
 subgraph/generated/
 subgraph/build/
 *.log
+cre/*/node_modules/

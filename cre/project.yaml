@@ -1,0 +1,19 @@
+# ==========================================================================
+# CRE PROJECT SETTINGS
+# ==========================================================================
+# Two confidential workflows share this project:
+#
+#   control-surface-watch    watches a private list of protocols and reports a
+#                            breach flag when their control surface degrades
+#   liquidation-protection   protects a leveraged position, using both market
+#                            movement and control surface degradation as triggers
+#
+staging-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
+
+production-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia
+      url: https://ethereum-sepolia-rpc.publicnode.com
