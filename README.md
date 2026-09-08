@@ -2,6 +2,13 @@
 
 **Who can take everything, how fast, and are they still awake?**
 
+> Base's L1 Portal holds **$1.86B**. It can be upgraded by a 2-of-2 Safe whose margin is **zero** -
+> one lost key and it can never be upgraded again. There is no timelock, so a signature takes effect
+> in the next block. Neither signer has ever sent a transaction, so both look dormant on every block
+> explorer.
+>
+> Every number in that paragraph was read from chain state. None of it appears on an explorer.
+
 Every protocol has a pause button, an upgrade path, a multisig. Almost none can tell you whether
 anyone is still holding it. Roll Call derives that from onchain history instead of reading the claim.
 
@@ -11,6 +18,18 @@ It catches two failure modes, both of which have destroyed real money:
   quorum is smaller than the declared one.
 - **Abandonment** - the keys that could pause an exploit are dark. The protocol has an emergency
   brake nobody is holding.
+
+## See it in a minute
+
+```bash
+npm install
+npm run scan:protocols   # who controls the protocols, and what they hold
+npm run api              # in one terminal
+npm run web              # in another, then open http://localhost:5173
+```
+
+No API keys needed for any of that. Paste a protocol contract into the box and it will find the
+Safe above it; paste a wallet and it will tell you there is nothing to measure.
 
 ---
 
@@ -239,12 +258,16 @@ Full statistical method, including null hypotheses, the artifact filters and the
 npm install
 cp .env.example .env
 
-npm run report -- 0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5   # terminal report
-npm run validate -- 0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5 # recovery + calibration
+npm run scan:protocols                                          # protocols, their value, who controls them
+npm run report -- 0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5   # one Safe, in the terminal
+npm run validate -- 0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5 # recovery agreement + calibration
 npm run scan                                                    # population scan for the leaderboard
 npm run api                                                     # x402-gated API on :8787
 npm run web                                                     # interface on :5173
 npm run mcp                                                     # MCP server on stdio
+npm run agent                                                   # pay for a report over x402, for real
+npm run protect                                                 # liquidation protection simulation
+npm run cover                                                   # issue a cover note through ATS
 ```
 
 No API keys are required to run the core. Everything above works against public endpoints.
@@ -304,7 +327,7 @@ and returns the full breakdown, so an agent can decide before paying.
 timestamped attestation, so *"on 10 September two of these signers had already been dark for 300
 days"* is provable after an incident rather than asserted. The archive is the asset.
 
-### Chainlink - `cre/rollcall-watch.ts`, `cre/liquidation-protection.ts`
+### Chainlink - `cre/control-surface-watch/`, `cre/liquidation-protection/`
 
 Two confidential workflows.
 
