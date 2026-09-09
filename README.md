@@ -72,20 +72,33 @@ than left implied.
 
 ## Where this sits against existing tools
 
-Multisig security analysis is not a new category. yAudit's Multisig Security Checker already does
-Safe introspection, threshold analysis and signing-speed heuristics, and there are several tools
-watching Safe configuration changes. Roll Call is not the first thing to look at a multisig.
+Multisig security analysis is not a new category, and neither is publishing who controls a protocol.
 
-What is different here is the direction and the evidence:
+- **L2Beat** documents the permissions of every L2 it tracks: who can upgrade, the multisig
+  thresholds, the security council structure. For Base and OP Mainnet it already states the
+  governance multisigs and their thresholds. That research is careful and hand-curated.
+- **yAudit's Multisig Security Checker** already does Safe introspection, threshold analysis and
+  signing-speed heuristics.
+- **Safe Watcher and OpenZeppelin Defender** alert on activity in a multisig you operate.
 
-- **Direction.** Existing tools start from a Safe. Roll Call starts from a protocol people have
-  heard of, resolves who can change it, and attaches what that contract holds. Closer to L2Beat for
-  control risk than to a Safe dashboard.
+So Roll Call is not the first thing to look at a multisig, and it is not the first thing to publish
+who controls a bridge. Any claim that nobody knows who holds these keys would be false.
+
+What those tools publish is **structure**: who the signers are, what the threshold is, how
+governance is wired. What none of them publish is whether those signers are **still there**, and
+that is the gap Roll Call is built for.
+
 - **Participation, not activity.** "Has this address sent transactions" is answerable from any
-  explorer and is the wrong question. "Has this address approved anything" is answerable only from
-  the signature blob, and it is the question that matters.
+  explorer and gives the wrong answer, because multisig signers approve offchain and their nonce
+  never moves. "Has this address approved anything" is answerable only from the signature blob.
+  We have not found another tool that recovers it.
+- **Derived, not curated.** L2Beat's permissions are researched by people and written into config.
+  Roll Call reads authority off the chain, so it runs against a contract nobody has documented.
 - **Evidence over scores.** There is no composite "collusion distance". Dependence is reported as a
   permutation p-value with the raw counts beside it, and the test's false-positive rate is published.
+
+Narrowly: the contribution is **liveness and independence measured from recovered approvals**, over
+a population discovered automatically. Not the category, and not the idea of documenting control.
 
 ## Every number belongs to a tier
 
@@ -220,7 +233,7 @@ many signers have gone quiet.
   0xe338204e...5cb6Fa      2/10  1    1    1     7       2    0
 ```
 
-14 live Safes in that first scan. Two have an honest quorum below their declared threshold that
+16 live Safes in that scan. Two have an honest quorum below their declared threshold that
 holds at every significance level tested; four more only at looser levels, and those are marked `?`
 because they are a prompt to look closer rather than a conclusion.
 
@@ -299,7 +312,7 @@ shared schema, so every tool that wants to answer *"who can change this contract
 integration per protocol. `subgraph/schema.graphql` is that shared shape. **Adding a protocol costs
 zero new query code** - one datasource entry.
 
-The `SignerApproval` entity does not exist anywhere else. It is the recovered approver set, which is
+The `SignerApproval` entity is the one we could not find an equivalent of. It is the recovered approver set, which is
 what makes cross-chain per-signer liveness a single query instead of a binary search per signer per
 chain.
 
@@ -359,6 +372,10 @@ number looked good.
 `npm run protect` runs it. Both workflows deliver only an action, a size and a commitment on chain:
 `LiquidationProtectionConsumer.sol` contains no health factor, no thresholds, no capital balance,
 and no indication of which rule fired.
+
+Both compile to WASM through the CRE CLI. Local simulation fails at engine creation, and it fails
+the same way on Chainlink's own unmodified scaffolds including a plain non-TEE one, so it is not
+this project. The full reproduction is in [`cre/SIMULATION.md`](cre/SIMULATION.md).
 
 ### Chainlink - watchlist detail
 

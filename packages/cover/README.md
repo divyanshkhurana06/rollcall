@@ -40,6 +40,9 @@ What we established, rather than assumed:
 with `WrongISINChecksum`, so each cover note carries a real, deterministic identifier derived from
 the Safe it covers. Verified against published ISINs in `isin.test.ts`.
 
-**To unblock:** the current ATS testnet factory address, or the contracts package version matching
-the deployed one. Both are a question for Hedera's Discord rather than something to brute force
-through twelve package versions.
+The search has since been done properly rather than by hand: all three published `deployBond`
+layouts, covering contracts 1.15 through 8.0, simulated against the live factory in 24
+combinations. None accepted. See [`FINDINGS.md`](./FINDINGS.md).
+
+**To unblock:** the current testnet factory address, the contracts version matching the deployed
+one, or confirmation that a direct contract call is a supported path at all.

@@ -179,8 +179,9 @@ function Protocols({ onInspect }: { onInspect: (a: string) => void }) {
         <h1>Who can change the thing <span>holding your money?</span></h1>
         <p>
           Roll Call starts from protocols you have heard of, reads what each contract holds straight from
-          chain state, resolves who can change it, and measures whether that signer set is as large as it
-          claims. <b>{held(scan.totalValueUsd)}</b> across <b>{scan.scanned}</b> contracts,
+          chain state, resolves who can change it, and measures whether those signers are still active.
+          Who holds these keys is documented elsewhere, notably by L2Beat. Whether they are still
+          there is not. <b>{held(scan.totalValueUsd)}</b> across <b>{scan.scanned}</b> contracts,
           {' '}<b>{scan.measured}</b> of them with a Safe in the authority path.
         </p>
         <div className="pills">
@@ -393,7 +394,8 @@ function Liveness({ r }: any) {
         {r.reachability.indeterminateSigners > 0 && <><b>{r.reachability.indeterminateSigners} indeterminate</b>: a lookup
         did not complete, so no claim is made and they count as neither live nor dark. </>}
         Signers flagged <b>nonce 0</b> have never sent a transaction. Their approvals were recovered from packed
-        signature blobs inside <code>execTransaction</code> calldata, which is the only way they are visible at all.
+        signature blobs inside <code>execTransaction</code> calldata, since their approvals leave no trace
+        in an account's transaction history.
         Absence of an observed signature is not proof a key is lost.
       </p>
     </div>

@@ -33,6 +33,26 @@ export const FACTORY_V1_ABI = parseAbi([
   'event BondDeployed(address indexed deployer, address bondAddress, BondData bondData, FactoryRegulationData regulationData)',
 ])
 
+/**
+ * Layout used by contracts v2.0.0 through v7.0.0. Identical across all seven, which is why it is
+ * the most likely shape for a factory deployed in that window.
+ *
+ * Differs from v1 (field order, and BondData carries proceedRecipients rather than couponDetails)
+ * and from v8 (SecurityData reorders again, moving resolver and maxSupply to the front).
+ */
+export const FACTORY_V7_ABI = parseAbi([
+  'struct ResolverProxyConfiguration { bytes32 key; uint256 version; }',
+  'struct Rbac { bytes32 role; address[] members; }',
+  'struct ERC20MetadataInfo { string name; string symbol; string isin; uint8 decimals; }',
+  'struct SecurityData { bool arePartitionsProtected; bool isMultiPartition; address resolver; ResolverProxyConfiguration resolverProxyConfiguration; Rbac[] rbacs; bool isControllable; bool isWhiteList; uint256 maxSupply; ERC20MetadataInfo erc20MetadataInfo; bool clearingActive; bool internalKycActivated; address[] externalPauses; address[] externalControlLists; address[] externalKycLists; bool erc20VotesActivated; address compliance; address identityRegistry; }',
+  'struct BondDetailsData { bytes3 currency; uint256 nominalValue; uint8 nominalValueDecimals; uint256 startingDate; uint256 maturityDate; }',
+  'struct BondData { SecurityData security; BondDetailsData bondDetails; address[] proceedRecipients; bytes[] proceedRecipientsData; }',
+  'struct AdditionalSecurityData { bool countriesControlListType; string listOfCountries; string info; }',
+  'struct FactoryRegulationData { uint8 regulationType; uint8 regulationSubType; AdditionalSecurityData additionalSecurityData; }',
+  'function deployBond(BondData _bondData, FactoryRegulationData _factoryRegulationData) returns (address bondAddress_)',
+  'event BondDeployed(address indexed deployer, address bondAddress)',
+])
+
 export const FACTORY_V8_ABI = parseAbi([
   'struct ResolverProxyConfiguration { bytes32 key; uint256 version; }',
   'struct ERC20MetadataInfo { string name; string symbol; string isin; uint8 decimals; }',
