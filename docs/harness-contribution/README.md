@@ -3,7 +3,8 @@
 `doctor` verifies Hedera operator credentials against the network, instead of only checking that
 the environment variables are set.
 
-- Branch: `doctor-verify-hedera-credentials`
+- Pull request: [hedera-dev/hedera-harness#53](https://github.com/hedera-dev/hedera-harness/pull/53)
+- Branch: `doctor-verify-hedera-credentials` on [the fork](https://github.com/divyanshkhurana06/hedera-harness/tree/doctor-verify-hedera-credentials)
 - Patch: [`doctor-verify-hedera-credentials.patch`](./doctor-verify-hedera-credentials.patch)
 - Evidence: [`before-after.txt`](./before-after.txt)
 

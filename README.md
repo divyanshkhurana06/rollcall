@@ -357,6 +357,14 @@ it, where the audit trail lives and how to buy credits, so an agent can find and
 without a human reading docs. The MCP server exposes the same five tools to agents that already
 speak MCP.
 
+**Harness.** Building this against testnet surfaced four setups that pass `doctor` and then fail
+forty minutes into a run: an EVM address in the account id variable, a key on the wrong curve, an
+account that only exists on mainnet, and a balance below what the run funds.
+[hedera-dev/hedera-harness#53](https://github.com/hedera-dev/hedera-harness/pull/53) makes `doctor`
+verify operator credentials against the mirror node instead of checking that the variables are set.
+Ten tests, no new dependencies, the key is never printed. Write-up and before/after evidence in
+[`docs/harness-contribution/`](docs/harness-contribution/README.md).
+
 ### Chainlink - `cre/control-surface-watch/`, `cre/liquidation-protection/`
 
 Two confidential workflows.
