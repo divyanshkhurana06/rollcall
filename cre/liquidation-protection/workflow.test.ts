@@ -274,6 +274,8 @@ function fakeChain(s: ChainState) {
 		if (method === 'eth_getLogs') return s.logs ?? []
 		if (method === 'eth_getTransactionCount') return '0x7'
 		if (method === 'eth_gasPrice') return '0x3b9aca00'
+		if (method === 'eth_getBlockByNumber') return { baseFeePerGas: '0x3b9aca00' }
+		if (method === 'eth_maxPriorityFeePerGas') return '0x5f5e100'
 		if (method === 'eth_sendRawTransaction') {
 			const tx = parseTransaction(params[0] as Hex)
 			const d = decodeFunctionData({ abi: [...LENDING_ABI, ...ERC20_ABI], data: tx.data! })

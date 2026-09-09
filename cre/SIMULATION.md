@@ -67,7 +67,7 @@ Environment: macOS arm64, Node v22.22.3, Bun 1.2.15, CRE CLI v1.32.0 and v1.26.0
 - `npm run challenge -- status`: the engine against the live Sepolia contract, dry run.
 - Both workflows typecheck against the real `@chainlink/cre-sdk` and compile to WASM with
   `cre workflow build`. The liquidation workflow rewritten for the official contract compiles to
-  binary hash `71820d03005ea79f1ce72b6269e968be248579669fb429f988b6d683ebed0cf9`.
+  binary hash `84633e7d2d63e1ecae8c28391daa708a13c5c6ecd27b91be3db6d04a6bd2d0c8`.
 
 ## To finish this
 

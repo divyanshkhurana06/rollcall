@@ -139,6 +139,17 @@ npm run challenge -- tick       # one cron iteration of the enclave code path, d
 `deposit` and `repay` revert until the organisers call `start()`, so before that `status` shows the
 plan and sends nothing.
 
+`status` also shows the live governance reading for the configured `market`, which is what makes it
+worth running before `start()`. Pointed at the 3-of-8 demo Safe, whose honest quorum resolves to 1,
+the workflow would correctly unwind the loan on its first tick. That Safe is the right demo of the
+trigger and the wrong stand-in for the challenge market, so the committed config watches a 2-of-4
+with a healthy control surface instead.
+
+Every tick spends one report credit on the governance leg. The cron runs once a minute, so buy
+enough for the scenario window: `npm run agent:subscribe -- 100` costs 17.2 testnet HBAR. Credits
+live in `data/subscriptions.json` on the API host, so a token bought against one deployment is not
+valid on another.
+
 `rollcallApiUrl` in both `config.staging.json` files must be reachable from the enclave. It is set
 to the URL `npm run tunnel` printed at the time of writing; a tunnel URL changes every run, so put
 the current one (or the hosted API from `render.yaml`) there before deploying.

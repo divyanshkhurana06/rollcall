@@ -47,7 +47,9 @@ export const DEPOSIT_TOPIC = keccak256(toHex('Deposit(address,uint256)'))
 export const REPAY_TOPIC = keccak256(toHex('Repay(address,uint256)'))
 export const MAX_UINT256 = (1n << 256n) - 1n
 
-const GAS = { approve: 80_000n, deposit: 160_000n, repay: 160_000n }
+// Generous fixed limits rather than an estimate per action: unused gas is refunded, and one fewer round trip
+// inside the enclave is one fewer thing that can fail while the position is at risk.
+const GAS = { approve: 100_000n, deposit: 250_000n, repay: 250_000n }
 
 export type Transport = (method: string, params: unknown[]) => Promise<unknown> | unknown
 export type FetchResult = { ok: boolean; status: number; body: string }
@@ -94,6 +96,32 @@ export type TickResult = {
 }
 
 const hex = (v: unknown): bigint => BigInt(String(v ?? '0x0'))
+const GWEI = 1_000_000_000n
+
+/**
+ * EIP-1559 fees with headroom. A legacy transaction priced at eth_gasPrice sits a hair above the
+ * base fee and is evicted the moment the base fee ticks up, which is exactly how the first join()
+ * on this position was dropped from the mempool. Twice the base fee plus a real tip survives the
+ * next several blocks; whatever is not needed is refunded.
+ */
+export async function feeParams(transport: Transport): Promise<{ maxFeePerGas: bigint; maxPriorityFeePerGas: bigint }> {
+	let base = 0n
+	try {
+		const block = (await transport('eth_getBlockByNumber', ['latest', false])) as { baseFeePerGas?: string } | null
+		base = hex(block?.baseFeePerGas)
+	} catch {
+		base = 0n
+	}
+	if (base === 0n) base = hex(await transport('eth_gasPrice', []))
+	let tip = GWEI
+	try {
+		const suggested = hex(await transport('eth_maxPriorityFeePerGas', []))
+		if (suggested > tip) tip = suggested
+	} catch {
+		/* keep the floor */
+	}
+	return { maxFeePerGas: base * 2n + tip, maxPriorityFeePerGas: tip }
+}
 
 /** Reads the honest quorum, dark signer count and reachability out of a Roll Call report. */
 export function readGovernance(body: string): Governance {
@@ -203,13 +231,13 @@ export async function tick(input: TickInput): Promise<TickResult> {
 	}
 	if (!input.send) return { ...decided, state: plan.action === 'UNWIND' ? 'unwound' : 'protected' }
 
-	// --- execution: approve if needed, then act. Legacy transactions, like the reference. --------
+	// --- execution: approve if needed, then act -------------------------------------------------
 	let nonce = Number(hex(await transport('eth_getTransactionCount', [me, 'latest'])))
-	const gasPrice = hex(await transport('eth_gasPrice', []))
+	const fees = await feeParams(transport)
 	const txHashes: string[] = []
 
 	const send = async (to: Address, data: Hex, gas: bigint): Promise<string> => {
-		const signed = await account.signTransaction({ type: 'legacy', chainId: config.chainId, to, data, gas, gasPrice, nonce, value: 0n })
+		const signed = await account.signTransaction({ type: 'eip1559', chainId: config.chainId, to, data, gas, nonce, value: 0n, ...fees })
 		nonce += 1
 		const hash = (await transport('eth_sendRawTransaction', [signed])) as string
 		txHashes.push(hash)

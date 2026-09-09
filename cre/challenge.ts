@@ -2,7 +2,7 @@ import { config as loadEnv } from 'dotenv'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { encodeFunctionData, decodeFunctionResult, type Address, type Hex } from 'viem'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
-import { ERC20_ABI, LENDING_ABI, MAX_UINT256, tick, type Fetcher, type Transport } from './liquidation-protection/engine'
+import { ERC20_ABI, LENDING_ABI, MAX_UINT256, feeParams, tick, type Fetcher, type Transport } from './liquidation-protection/engine'
 import { fmtHf, fmtUnits } from './liquidation-protection/scenarios'
 import { healthFactor, parseRules } from './liquidation-protection/strategy'
 
@@ -78,8 +78,8 @@ async function waitFor(hash: string): Promise<any> {
 async function sendTx(pk: Hex, to: Address, data: Hex, gas: bigint): Promise<string> {
 	const account = privateKeyToAccount(pk)
 	const nonce = Number(BigInt(String(await transport('eth_getTransactionCount', [account.address, 'pending']))))
-	const gasPrice = BigInt(String(await transport('eth_gasPrice', [])))
-	const signed = await account.signTransaction({ type: 'legacy', chainId: 11155111, to, data, gas, gasPrice, nonce, value: 0n })
+	const fees = await feeParams(transport)
+	const signed = await account.signTransaction({ type: 'eip1559', chainId: 11155111, to, data, gas, nonce, value: 0n, ...fees })
 	return (await transport('eth_sendRawTransaction', [signed])) as string
 }
 
@@ -161,7 +161,7 @@ async function join() {
 	const joined = await call<boolean>(LENDING, LENDING_ABI, 'isUser', [me])
 	if (!joined) {
 		console.log(`${C.d}join()...${C.x}`)
-		const hash = await sendTx(pk, LENDING, encodeFunctionData({ abi: LENDING_ABI, functionName: 'join' }), 250_000n)
+		const hash = await sendTx(pk, LENDING, encodeFunctionData({ abi: LENDING_ABI, functionName: 'join' }), 400_000n)
 		const receipt = await waitFor(hash)
 		if (receipt.status !== '0x1') throw new Error(`join reverted: ${ETHERSCAN}/tx/${hash}`)
 		console.log(`${C.g}joined${C.x}  ${ETHERSCAN}/tx/${hash}`)
@@ -177,7 +177,7 @@ async function join() {
 			console.log(`${C.d}${name} already approved${C.x}`)
 			continue
 		}
-		const hash = await sendTx(pk, token, encodeFunctionData({ abi: ERC20_ABI, functionName: 'approve', args: [LENDING, MAX_UINT256] }), 80_000n)
+		const hash = await sendTx(pk, token, encodeFunctionData({ abi: ERC20_ABI, functionName: 'approve', args: [LENDING, MAX_UINT256] }), 100_000n)
 		const receipt = await waitFor(hash)
 		if (receipt.status !== '0x1') throw new Error(`${name} approve reverted: ${ETHERSCAN}/tx/${hash}`)
 		console.log(`${C.g}${name} approved${C.x}  ${ETHERSCAN}/tx/${hash}`)

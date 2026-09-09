@@ -5,7 +5,7 @@
   "vethAddress": "0x5dED1a40c3D56dA42E7f932f781c0432556c9814",
   "vusdAddress": "0x6Fe92Ead5299040f50F095860b5A0A7A2D4041A2",
   "rollcallApiUrl": "https://granted-excited-handbags-script.trycloudflare.com",
-  "market": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
+  "market": "0x4426f7eAA169aa9B84E665CA0f28B75EC24c1ca2",
   "privateKeySecretId": "CHALLENGE_PRIVATE_KEY",
   "rulesSecretId": "PROTECTION_RULES",
   "apiKeySecretId": "ROLLCALL_API_KEY"
