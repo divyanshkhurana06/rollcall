@@ -254,9 +254,9 @@ npm run scan        # refresh the population scan, writes data/leaderboard.json
                                                                    │
                         ┌──────────────────┬───────────────────────┼─────────────────┐
                         ▼                  ▼                       ▼                 ▼
-                   x402 gate          HCS attestation          MCP server       CRE workflow
-                  (metered by         (timestamped             (agents ask      (watchlist stays
-                   real work)          archive)                 pre-integration) in the enclave)
+                   x402 gate          HCS attestation          MCP server       CRE workflows
+                  (metered by         (timestamped             (agents ask      (rules and keys
+                   real work)          archive)                 pre-integration) stay in the enclave)
                         │                                            │
                         └──────────────── web interface ─────────────┘
                                      report + leaderboard
@@ -279,9 +279,15 @@ npm run api                                                     # x402-gated API
 npm run web                                                     # interface on :5173
 npm run mcp                                                     # MCP server on stdio
 npm run agent                                                   # pay for a report over x402, for real
-npm run protect                                                 # liquidation protection simulation
+npm run agent:subscribe -- 10                                   # buy 10 report credits, get a bearer token
+npm run protect                                                 # liquidation protection, the five published scenarios
+npm run challenge -- status                                     # the live challenge position on Sepolia
 npm run cover                                                   # issue a cover note through ATS
+npm run tunnel                                                  # a public https URL for the API, no account needed
 ```
+
+To host the API: `Dockerfile` and `render.yaml` are in the root. Point a static build of `apps/web`
+at it with `VITE_API_BASE=https://your-api`.
 
 No API keys are required to run the core. Everything above works against public endpoints.
 
@@ -340,6 +346,17 @@ and returns the full breakdown, so an agent can decide before paying.
 timestamped attestation, so *"on 10 September two of these signers had already been dark for 300
 days"* is provable after an incident rather than asserted. The archive is the asset.
 
+**Prepaid credits.** `POST /subscribe?credits=N` is x402-gated and returns a bearer token. It exists
+for the runtimes that cannot sign a Hedera transfer per request: the Chainlink workflows run inside
+an enclave with no Hedera key, and a cron should not carry one. The key that pays stays with the
+buyer; the token is what the enclave holds. An unknown or exhausted token is not an error, it falls
+through to the 402 so the caller can pay per request instead.
+
+**Discovery.** `GET /.well-known/x402` lists every resource, how it is priced, which network settles
+it, where the audit trail lives and how to buy credits, so an agent can find and pay for the service
+without a human reading docs. The MCP server exposes the same five tools to agents that already
+speak MCP.
+
 ### Chainlink - `cre/control-surface-watch/`, `cre/liquidation-protection/`
 
 Two confidential workflows.
@@ -349,33 +366,42 @@ watches, and at what thresholds it de-risks, tells you where its money is and wh
 move. So the watchlist, thresholds and raw reports execute inside `handlerInTee`; what leaves is a
 breach flag and a commitment to the report digests.
 
-**Automated liquidation protection.** The challenge asks for a workflow that protects a virtual
-ETH-collateral / USDC-debt position through simulated market movements with private rules. That is
-implemented in full. What Roll Call adds is a second trigger no liquidation protection currently
-has: every existing system watches one variable, price. But a position becomes unsafe for reasons
-that never touch a price feed. If the market's control surface loses quorum, or its signers turn
-out to be one party, the correct response is to de-risk regardless of how healthy the position
-looks.
+**Automated liquidation protection.** Entered in the official challenge against `ChallengeLending`
+on Ethereum Sepolia (`0x88574e7C...31ba1`). The strategy is written in the contract's own integers,
+because at 1800.00 the starting position has a health factor of 1.0029, which the contract truncates
+to 100 and liquidates. Every published scenario, including "safe volatility", liquidates the
+untouched position. `npm run protect` walks all five through a model of the contract under both
+orderings of price update and liquidation check, and reports the worse one:
 
 ```
-  path          unprotected    protected      actions  capital used  equity kept
-  crash         LIQUIDATED     LIQUIDATED     2        $8000         $0
-  grind down    LIQUIDATED     open           2        $8000         $5167
-  whipsaw       survived       open           1        $6686         $12354
-  recovery      LIQUIDATED     open           2        $8000         $14595
+  scenario           unprotected          protected   min hf   actions  vETH used  vUSD used  loan open
+  gradual decline    LIQUIDATED hf 0.88   survived    1.09     3        2.24       0.00       100%
+  sudden crash       LIQUIDATED hf 0.82   survived    1.06     3        2.74       0.00       100%
+  temporary wick     LIQUIDATED hf 0.91   survived    1.09     2        1.42       0.00       100%
+  two-stage decline  LIQUIDATED hf 0.86   survived    1.07     3        2.48       0.00       100%
+  safe volatility    LIQUIDATED hf 0.98   survived    1.11     2        1.24       0.00       100%
 ```
 
-The crash path still liquidates. $8,000 of emergency capital cannot rescue $18,000 of debt against
-a sustained collapse, and reporting 4 out of 4 would have meant tuning the parameters until the
-number looked good.
+Collateral is spent before debt, because `loanContinuityScore` is computed on chain from
+time-weighted debt and a deposit keeps the loan open. The loan stays 100% open in every scenario.
 
-`npm run protect` runs it. Both workflows deliver only an action, a size and a commitment on chain:
-`LiquidationProtectionConsumer.sol` contains no health factor, no thresholds, no capital balance,
-and no indication of which rule fired.
+What Roll Call adds is a second trigger no liquidation protection has: every existing system watches
+one variable, price. But a position becomes unsafe for reasons that never touch a price feed. If the
+market's control surface loses quorum, or its signers turn out to be one party, the correct response
+is to unwind regardless of how healthy the position looks. Five of the thirty-seven tests exist only
+to prove that trigger fires on a perfectly healthy position.
 
-Both compile to WASM through the CRE CLI. Local simulation fails at engine creation, and it fails
-the same way on Chainlink's own unmodified scaffolds including a plain non-TEE one, so it is not
-this project. The full reproduction is in [`cre/SIMULATION.md`](cre/SIMULATION.md).
+`engine.ts` is one `tick()` with the transport injected, so the code that runs in the enclave is the
+code that runs from a laptop (`npm run challenge -- tick`) and the code the tests drive against an
+in-memory model of the contract that decodes every signed transaction. The signing key, the rules,
+the cooldown, the governance bounds and the Roll Call credential are CRE secrets; the credential is
+a prepaid credit token so the enclave never holds a Hedera key.
+
+Both workflows compile to WASM through the CRE CLI. Local simulation fails at engine creation, and it
+fails the same way on Chainlink's own unmodified scaffolds including a plain non-TEE one, so it is not
+this project. The full reproduction is in [`cre/SIMULATION.md`](cre/SIMULATION.md). Everything else
+about the workflow is exercised without the simulator: 37 tests, the scenario harness, and the live
+Sepolia position through `npm run challenge`.
 
 ### Chainlink - watchlist detail
 

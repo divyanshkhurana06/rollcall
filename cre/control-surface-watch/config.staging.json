@@ -1,6 +1,6 @@
 {
   "schedule": "0 */1 * * * *",
-  "rollcallApiUrl": "https://postman-echo.com/get",
+  "rollcallApiUrl": "https://granted-excited-handbags-script.trycloudflare.com",
   "apiKeySecretId": "ROLLCALL_API_KEY",
   "watchlistSecretId": "ROLLCALL_WATCHLIST"
 }

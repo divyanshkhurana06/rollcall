@@ -9,3 +9,6 @@ cre/*/node_modules/
 cre/.env
 cre/*/.cre_build_tmp.*
 cre/*/dist/
+
+# prepaid credit tokens are credentials
+data/subscriptions.json

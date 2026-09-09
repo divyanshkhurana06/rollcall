@@ -20,7 +20,10 @@
     "cover": "tsx packages/cover/src/issue.ts",
     "manifest": "tsx subgraph/generate-manifest.ts",
     "protect": "tsx cre/simulate.ts",
-    "scan:protocols": "tsx packages/core/src/scan-protocols.ts"
+    "scan:protocols": "tsx packages/core/src/scan-protocols.ts",
+    "challenge": "tsx cre/challenge.ts",
+    "agent:subscribe": "tsx packages/agent/src/subscribe.ts",
+    "tunnel": "cloudflared tunnel --url http://localhost:8787"
   },
   "dependencies": {
     "@chainlink/cre-sdk": "^1.19.1",

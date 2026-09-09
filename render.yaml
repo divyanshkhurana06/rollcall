@@ -1,0 +1,34 @@
+# One click on Render: New > Blueprint > this repo. Fill the sync:false values from .env.
+services:
+  - type: web
+    name: rollcall-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: HEDERA_NETWORK
+        value: testnet
+      - key: X402_FACILITATOR
+        value: https://api.testnet.blocky402.com
+      - key: X402_NETWORK
+        value: hedera:testnet
+      - key: X402_ASSET
+        value: "0.0.0"
+      - key: X402_DEV_BYPASS
+        value: "0"
+      - key: X402_PAY_TO
+        sync: false
+      - key: HEDERA_ACCOUNT_ID
+        sync: false
+      - key: HEDERA_PRIVATE_KEY
+        sync: false
+      - key: HCS_TOPIC_ID
+        sync: false
+      - key: GRAPH_API_KEY
+        sync: false
+      - key: GRAPH_GATEWAY
+        value: https://gateway.thegraph.com/api
+      - key: SUBGRAPH_URL
+        sync: false
+      - key: RPC_ETHEREUM
+        value: https://eth.drpc.org

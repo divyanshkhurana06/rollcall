@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+.env
+.env.*
+!.env.example
+cre
+subgraph
+substreams
+docs
+apps/web
+data/subscriptions.json
+data/last-report.json
+*.log
+.git

@@ -1,21 +1,19 @@
 # Chainlink CRE Confidential Workflows
 
-Two workflows. Both put the sensitive half of the decision inside an AWS Nitro enclave and let only
-a verdict cross back to the DON for consensus.
+Two workflows. Both put the sensitive half of a decision inside an AWS Nitro enclave and let only
+the consequence out: a breach count for one, a signed transaction for the other.
 
 ```bash
-cre login                                              # once, interactive
 cd cre
-cre workflow simulate control-surface-watch  --target staging
-cre workflow simulate liquidation-protection --target staging
+cre workflow build ./control-surface-watch  --target staging -e .env   # compiles to WASM
+cre workflow build ./liquidation-protection --target staging -e .env   # compiles to WASM
+
+cd liquidation-protection && bun test    # 37 pass
+cd control-surface-watch  && bun test    # 11 pass
 ```
 
-Tests run without auth or network:
-
-```bash
-cd cre/liquidation-protection && bun test    # 14 pass
-cd cre/control-surface-watch  && bun test    # 11 pass
-```
+Tests run without auth or network. `cre workflow simulate` does not run on this machine for any
+workflow, including Chainlink's own scaffolds; the reproduction is in [`SIMULATION.md`](SIMULATION.md).
 
 ## control-surface-watch
 
@@ -32,52 +30,119 @@ at the time.
 
 ## liquidation-protection
 
-Protects a virtual ETH-collateral / USDC-debt position through market movement, with private rules.
-That is the challenge spec, implemented in full: it avoids liquidation, repays the minimum that
-restores the target rather than closing the position, and never spends more emergency capital than
-it has.
+Entered in the [Automated Liquidation Protection Challenge](https://github.com/solangegueiros/cf-liquidation-protection-challenge)
+against the official `ChallengeLending` contract on Ethereum Sepolia.
 
-**What Roll Call adds is a second trigger no liquidation protection has.** Every existing system
-watches one variable: price. But a position becomes unsafe for reasons that never touch a price
-feed. If the market's control surface loses quorum, or its signers turn out to be one party wearing
-several hats, the people who can pause, upgrade or seize that market are not who you thought, and
-the correct response is to de-risk no matter how healthy the health factor looks.
+| | |
+|---|---|
+| contract | `0x88574e7Cc0027afd04951daa09B64d4441931ba1` |
+| position on `join()` | 5.00 vETH collateral, 7000.00 vUSD debt, health factor 1.11 at 2000.00 |
+| emergency capital | 5.00 vETH and 7000.00 vUSD minted to the wallet |
+| liquidation | `checkAllHF` at health factor <= 1.00, partial, with a 5% penalty |
+| scoring | protection 40, loan continuity 20, capital efficiency 15, confidentiality 15, discipline 10 |
 
-```
-MARKET      health factor approaches the private intervention point   -> deleverage
-GOVERNANCE  the control surface degrades past a private bound         -> de-risk regardless
-```
+### In the contract's own integers
 
-Four of the fourteen tests exist only to prove the second trigger fires on a position that is
-perfectly healthy by every market measure.
+`strategy.ts` does every calculation in the contract's arithmetic: two-decimal units, `calcHF`,
+ceiling division for the collateral that reaches a target. The reason is one number. At 1800.00
+the starting position has a health factor of 1.0029, which the contract truncates to 100 and
+liquidates. A strategy that reasons in floats calls that position safe. **Every published scenario,
+including "safe volatility", liquidates the untouched position** for exactly this reason, and the
+harness proves it rather than asserting it.
 
-### Why the enclave is load bearing, not decorative
+The contract's stored health factor is only refreshed inside `calcHF`, so after a price update it
+is stale. The workflow recomputes from collateral, debt and the live price every tick.
 
-A protection strategy is front-runnable in both directions. Publishing the health factor at which
-you deleverage tells an adversary where to push the price to force your hand. Publishing your
-emergency capital tells them how far they can push before you run out. The governance bounds are
-worse: they are a map of which protocols you have decided you do not trust.
-
-What crosses to the DON is an action code, a size, and a commitment. Not the thresholds, not the
-position, and deliberately not the reason - because the reason names which rule fired.
-
-`LiquidationProtectionConsumer.sol` contains no health factor, no thresholds, no capital balance and
-no rule identifier. An observer learns that a position was defended and by how much, which the
-transfer would have told them anyway.
-
-## Strategy evidence
-
-`npm run protect` (from the repo root) runs the same decision function over generated price paths,
-so the strategy can be judged on what it achieves rather than on whether it compiles:
+### The strategy
 
 ```
-path          unprotected    protected    actions  capital used  equity kept
-crash         LIQUIDATED     LIQUIDATED   2        $8000         $0
-grind down    LIQUIDATED     open         2        $8000         $5167
-whipsaw       survived       open         1        $6686         $12354
-recovery      LIQUIDATED     open         2        $8000         $14595
+MARKET      health factor reaches the private trigger                  -> restore to the private target
+GOVERNANCE  the market's control surface degrades past a private bound -> unwind regardless
 ```
 
-The crash path still liquidates. $8,000 of emergency capital cannot rescue $18,000 of debt against a
-sustained collapse, and reporting four out of four would have meant tuning the parameters until the
-number looked good.
+- **Deposit first.** Adding collateral keeps the loan open; repaying shrinks it. `loanContinuityScore`
+  is computed on chain from time-weighted debt, so the default spends vETH before vUSD. The priority
+  is a private rule and can be flipped.
+- **Restore to a target, not to safety.** The gap between trigger and target is the hysteresis. Each
+  action buys enough headroom that the next scenario step cannot cross 1.00 before the cron fires.
+- **Cooldown, statelessly.** The tick reads its own recent `Deposit` and `Repay` events from the
+  chain. A non-critical action inside the cooldown is skipped; a critical one is not.
+- **Fail safe on the governance leg, fail open on the cooldown.** A Roll Call report that cannot be
+  fetched is no signal, never a breach. A cooldown lookup that fails does not stop a protection.
+
+What Roll Call adds is the second trigger. Every existing protection watches one variable: price.
+But a position becomes unsafe for reasons that never touch a price feed. If the market's control
+surface loses quorum, or its signers turn out to be one party wearing several hats, the people who
+can pause, upgrade or seize that market are not who you thought, and the correct response is to
+de-risk however healthy the health factor looks. Five of the thirty-seven tests exist only to prove
+this trigger fires on a position that is perfectly healthy by every market measure.
+
+### The five published scenarios
+
+`npm run protect` from the repo root walks the scenarios from the challenge README through a model
+of the contract, under **both** orderings of price update and liquidation check, and reports the
+worse one:
+
+```
+scenario           unprotected          protected   min hf   actions  vETH used  vUSD used  loan open
+gradual decline    LIQUIDATED hf 0.88   survived    1.09     3        2.24       0.00       100%
+sudden crash       LIQUIDATED hf 0.82   survived    1.06     3        2.74       0.00       100%
+temporary wick     LIQUIDATED hf 0.91   survived    1.09     2        1.42       0.00       100%
+two-stage decline  LIQUIDATED hf 0.86   survived    1.07     3        2.48       0.00       100%
+safe volatility    LIQUIDATED hf 0.98   survived    1.11     2        1.24       0.00       100%
+```
+
+The health factor never reaches 1.00 under either ordering, so the result does not depend on the
+workflow winning a race against the liquidation check. The loan stays 100% open in every scenario,
+and no vUSD is spent.
+
+### One engine, three transports
+
+`engine.ts` is a single `tick()` with the RPC transport injected. The same function runs:
+
+- inside the enclave, over the CRE HTTP capability (`workflow.ts`)
+- from a laptop, over `fetch` (`npm run challenge -- tick`)
+- in the tests, against an in-memory model of the contract that decodes the signed transactions
+  and checks what was sent, in what order, to which address
+
+The execution path that will defend the position during the organisers' run is the one exercised
+offline. Not a copy of it.
+
+### What stays inside
+
+The signing key, every threshold and cap, the action priority, the cooldown, the governance bounds,
+the Roll Call credential, the report, and which rule fired. The rules are one JSON secret:
+
+```
+SECRET_PROTECTION_RULES={"triggerHf":...,"targetHf":...,"criticalHf":...,"maxDepositUnits":...,
+                         "maxRepayPct":...,"preferDeposit":...,"cooldownBlocks":...,
+                         "minHonestQuorum":...,"maxDarkSigners":...}
+```
+
+What leaves is a signed transaction. An observer sees that the position was defended and by how
+much, which the chain would have told them anyway. The log carries the action and the amounts, never
+a rule or a reason.
+
+The Roll Call credential is a prepaid credit token, bought once over x402 with
+`npm run agent:subscribe`. The enclave holds a credential; the Hedera key that paid for it never
+leaves the buyer.
+
+### Entering the challenge
+
+```bash
+npm run challenge -- keygen     # a dedicated Sepolia key. Fund the printed address with a little Sepolia ETH.
+npm run challenge -- status     # chain state, our position, and exactly what the workflow would do now
+npm run challenge -- join       # join(), then approve vETH and vUSD once, so the enclave never has to
+npm run challenge -- tick       # one cron iteration of the enclave code path, dry run. Add --send to transact.
+```
+
+`deposit` and `repay` revert until the organisers call `start()`, so before that `status` shows the
+plan and sends nothing.
+
+`rollcallApiUrl` in both `config.staging.json` files must be reachable from the enclave. It is set
+to the URL `npm run tunnel` printed at the time of writing; a tunnel URL changes every run, so put
+the current one (or the hosted API from `render.yaml`) there before deploying.
+
+To deploy the workflow itself: `cre workflow deploy ./liquidation-protection --target staging` once
+Confidential Workflows access is provisioned for the organisation. The build already succeeds; only
+the simulator is blocked.

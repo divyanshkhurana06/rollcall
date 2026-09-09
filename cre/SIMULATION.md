@@ -60,15 +60,22 @@ Environment: macOS arm64, Node v22.22.3, Bun 1.2.15, CRE CLI v1.32.0 and v1.26.0
 
 ## What stands in its place
 
-- `bun test` in each workflow: **25 tests**, covering both triggers and the report encoding, using
-  the fake `TeeRuntime` pattern from the official template.
-- `npm run protect` from the repo root: the same decision function over generated price paths,
-  reporting whether it avoided liquidation, preserved the carry, and used emergency capital
-  efficiently.
-- Both workflows typecheck against the real `@chainlink/cre-sdk` and compile to WASM.
+- `bun test` in each workflow: **48 tests** (37 + 11). The liquidation tests drive the real
+  `tick()` against an in-memory model of `ChallengeLending` that decodes every signed transaction.
+- `npm run protect` from the repo root: the same decision function over the five scenarios the
+  challenge publishes, under both orderings of price update and liquidation check.
+- `npm run challenge -- status`: the engine against the live Sepolia contract, dry run.
+- Both workflows typecheck against the real `@chainlink/cre-sdk` and compile to WASM with
+  `cre workflow build`. The liquidation workflow rewritten for the official contract compiles to
+  binary hash `71820d03005ea79f1ce72b6269e968be248579669fb429f988b6d683ebed0cf9`.
 
 ## To finish this
 
-Ask in Chainlink's Discord (`#partner-chainlink`) whether `cre workflow simulate` is known to fail
+The Confidential Workflows track accepts a simulation **or** a live deployment. The deploy access
+form was submitted on 9 September with this reproduction attached. With access provisioned,
+`cre workflow deploy ./liquidation-protection --target staging` is the path that does not depend on
+the local simulator at all.
+
+Asked in Chainlink's Discord (`#partner-chainlink`) whether `cre workflow simulate` is known to fail
 at engine creation on macOS arm64. The reproduction is a two-line one: `cre init` any TypeScript
 template, set its secret, simulate.

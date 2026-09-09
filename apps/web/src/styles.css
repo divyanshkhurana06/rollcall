@@ -294,3 +294,10 @@ code { font-family: var(--mono); font-size: .92em; color: var(--ink-2); }
 .res-kind { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
   letter-spacing: .08em; color: var(--ink-4); margin-bottom: 5px; }
 .res-msg { font-size: 14px; font-weight: 550; }
+
+.tokin {
+  flex: 1; max-width: 520px; background: var(--panel); border: 1px solid var(--line); color: var(--ink);
+  padding: 7px 10px; border-radius: var(--r); font-family: var(--mono); font-size: 12px; outline: none;
+}
+.tokin:focus { border-color: #33343a; background: var(--panel-2); }
+.tokin::placeholder { color: var(--ink-4); }

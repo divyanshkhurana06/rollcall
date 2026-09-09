@@ -1,9 +1,12 @@
 {
   "schedule": "0 */1 * * * *",
-  "priceUrl": "https://postman-echo.com/get",
-  "positionUrl": "https://postman-echo.com/get",
-  "rollcallApiUrl": "https://postman-echo.com/get",
+  "rpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
+  "lendingAddress": "0x88574e7Cc0027afd04951daa09B64d4441931ba1",
+  "vethAddress": "0x5dED1a40c3D56dA42E7f932f781c0432556c9814",
+  "vusdAddress": "0x6Fe92Ead5299040f50F095860b5A0A7A2D4041A2",
+  "rollcallApiUrl": "https://granted-excited-handbags-script.trycloudflare.com",
   "market": "0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5",
-  "apiKeySecretId": "ROLLCALL_API_KEY",
-  "rulesSecretId": "PROTECTION_RULES"
+  "privateKeySecretId": "CHALLENGE_PRIVATE_KEY",
+  "rulesSecretId": "PROTECTION_RULES",
+  "apiKeySecretId": "ROLLCALL_API_KEY"
 }

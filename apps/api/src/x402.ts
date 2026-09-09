@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from 'express'
+import { consume, redact } from './subscriptions.js'
 
 /**
  * x402 v2 payment gate, settled on Hedera testnet through the Blocky402 facilitator.
@@ -40,26 +41,30 @@ export interface Quote {
   asset: string
   network: string
   breakdown: Record<string, string>
-  units: { pairs: number; txs: number; chains: number; permutations: number }
+  units: { pairs: number; txs: number; chains: number; permutations: number; count: number }
 }
 
-export function quote(input: { signers: number; txs: number; chains: number; permutations: number }): Quote {
+export function quote(input: { signers: number; txs: number; chains: number; permutations: number; count?: number }): Quote {
   const pairs = (input.signers * (input.signers - 1)) / 2
   const txs = Math.min(input.txs, 500)
+  const count = Math.max(1, Math.floor(input.count ?? 1))
   const parts = {
     base: CFG.base,
     pairwise: pairs * CFG.perPair,
     history: txs * CFG.perTx,
     chains: input.chains * CFG.perChain,
   }
-  const hbar = Object.values(parts).reduce((a, b) => a + b, 0)
+  const perReport = Object.values(parts).reduce((a, b) => a + b, 0)
+  const hbar = perReport * count
+  const breakdown = Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, v.toFixed(6)]))
+  if (count > 1) breakdown.reports = String(count)
   return {
     amount: String(Math.round(hbar * TINYBAR)),
     hbar: hbar.toFixed(6),
     asset: CFG.asset,
     network: CFG.network,
-    breakdown: Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, v.toFixed(6)])),
-    units: { pairs, txs, chains: input.chains, permutations: input.permutations },
+    breakdown,
+    units: { pairs, txs, chains: input.chains, permutations: input.permutations, count },
   }
 }
 
@@ -118,7 +123,7 @@ export async function paymentRequiredBody(q: Quote, resource: string) {
 
 export interface Settlement {
   paid: boolean
-  mode: 'facilitator' | 'dev-bypass'
+  mode: 'facilitator' | 'dev-bypass' | 'subscription'
   payer?: string
   transaction?: string
   network: string
@@ -127,6 +132,9 @@ export interface Settlement {
   asset: string
   explorer?: string
   verifiedAt: number
+  /** Subscription settlements: the redacted token and what it has left. */
+  token?: string
+  creditsLeft?: number
 }
 
 async function post(path: string, body: unknown) {
@@ -178,11 +186,30 @@ export async function verifyAndSettle(header: string, q: Quote): Promise<Settlem
   }
 }
 
-export function gate(estimator: (req: Request) => { signers: number; txs: number; chains: number; permutations: number }) {
+export function gate(
+  estimator: (req: Request) => { signers: number; txs: number; chains: number; permutations: number; count?: number },
+  options: { allowToken?: boolean } = {},
+) {
+  const allowToken = options.allowToken ?? true
   return async (req: Request, res: Response, next: NextFunction) => {
     const q = quote(estimator(req))
     ;(req as any).quote = q
     const resource = req.originalUrl
+
+    // A prepaid credit settles the request without a signature. An unknown or exhausted token is
+    // not an error: it falls through to the 402, and the client can pay per request instead.
+    const auth = req.header('Authorization')
+    if (allowToken && auth?.startsWith('Bearer ')) {
+      const sub = consume(auth.slice(7).trim())
+      if (sub) {
+        ;(req as any).settlement = {
+          paid: true, mode: 'subscription', network: q.network,
+          amount: q.amount, hbar: q.hbar, asset: q.asset, verifiedAt: Math.floor(Date.now() / 1000),
+          token: redact(sub.token), creditsLeft: sub.credits,
+        }
+        return next()
+      }
+    }
 
     const header = req.header('X-PAYMENT')
     if (!header) {

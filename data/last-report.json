@@ -6,7 +6,7 @@
     },
     "header": {
       "methodVersion": "1.0.0",
-      "generatedAt": "2026-09-06T16:05:41.319Z",
+      "generatedAt": "2026-09-09T16:49:58.235Z",
       "chainsSearched": [
         "ethereum"
       ],
@@ -54,40 +54,48 @@
           "timestamp": 1788503472,
           "source": "safe-confirmation"
         },
-        "daysSinceAnySignal": 2,
+        "daysSinceAnySignal": 5,
         "nonce": 85,
         "indeterminate": false,
-        "statement": "No observed signature or transaction in 2 days across 1 chains (Ethereum)."
+        "statement": "No observed signature or transaction in 5 days across 1 chains (Ethereum)."
       },
       {
         "signer": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
         "chainsSearched": [
           "Ethereum"
         ],
-        "lastOutgoingTx": null,
+        "lastOutgoingTx": {
+          "chain": "ethereum",
+          "blockNumber": 25869964,
+          "timestamp": 1788115487
+        },
         "lastApproval": {
           "timestamp": 1788503214,
           "source": "safe-confirmation"
         },
-        "daysSinceAnySignal": 2,
-        "nonce": 0,
+        "daysSinceAnySignal": 5,
+        "nonce": 25,
         "indeterminate": false,
-        "statement": "No observed signature or transaction in 2 days across 1 chains (Ethereum)."
+        "statement": "No observed signature or transaction in 5 days across 1 chains (Ethereum)."
       },
       {
         "signer": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
         "chainsSearched": [
           "Ethereum"
         ],
-        "lastOutgoingTx": null,
+        "lastOutgoingTx": {
+          "chain": "ethereum",
+          "blockNumber": 25902215,
+          "timestamp": 1788503975
+        },
         "lastApproval": {
           "timestamp": 1788503035,
           "source": "safe-confirmation"
         },
-        "daysSinceAnySignal": 2,
-        "nonce": 0,
+        "daysSinceAnySignal": 5,
+        "nonce": 30,
         "indeterminate": false,
-        "statement": "No observed signature or transaction in 2 days across 1 chains (Ethereum)."
+        "statement": "No observed signature or transaction in 5 days across 1 chains (Ethereum)."
       }
     ],
     "reachability": {
@@ -114,8 +122,8 @@
           "label": "Aave v3",
           "family": "lending",
           "protocolType": "LENDING",
-          "protocolTvlUsd": 24700650985.00203,
-          "protocolUsers": 4470627,
+          "protocolTvlUsd": 24636608326.23526,
+          "protocolUsers": 4488898,
           "hasAccount": false,
           "openPositions": 0,
           "totalPositions": 0
@@ -125,8 +133,8 @@
           "label": "Aave v2",
           "family": "lending",
           "protocolType": "LENDING",
-          "protocolTvlUsd": 97521554.66383636,
-          "protocolUsers": 1412341,
+          "protocolTvlUsd": 97451324.18787655,
+          "protocolUsers": 1412419,
           "hasAccount": false,
           "openPositions": 0,
           "totalPositions": 0
@@ -137,13 +145,137 @@
           "family": "dex-amm-extended",
           "protocolType": "EXCHANGE",
           "protocolTvlUsd": 1.3056340231110604e+26,
-          "protocolUsers": 82885968,
+          "protocolUsers": 82905691,
           "hasAccount": false,
           "openPositions": 0,
           "totalPositions": 0
         }
       ],
       "source": "The Graph gateway, 3 standardized deployments, one query shape"
+    },
+    "participation": {
+      "safe": "0x97cd81555F18d612C02FC4468118C48adD9f1245",
+      "chain": "ethereum",
+      "threshold": 3,
+      "owners": [
+        "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+        "0xb9367abE3eF4bD498b8FBafC239f146d4eE98B98",
+        "0x52da28d9289C3589239285700b92CdFcC5B74D99"
+      ],
+      "rows": [
+        {
+          "safeTxHash": "0x92b87d14b34d0d3c71a1d961612372a48249a46303fb7c788beb452ab316967f",
+          "txHash": "0xbd00f75f60402793590e1e046ec038308352e87f7c6f5a06a5ebdf7cb22e92df",
+          "timestamp": 1788115487,
+          "executor": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+          "approvers": [
+            {
+              "signer": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+              "kind": "eip712",
+              "position": 0
+            },
+            {
+              "signer": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+              "kind": "eip712",
+              "position": 1
+            },
+            {
+              "signer": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+              "kind": "eip712",
+              "position": 2
+            }
+          ],
+          "unresolved": 0,
+          "serviceApprovers": [
+            "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+            "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+            "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98"
+          ],
+          "agreement": "exact"
+        },
+        {
+          "safeTxHash": "0x79a0d475e488227a032a2e4436b7000cf82fcbe075bdec3dbe252197f03a8d78",
+          "txHash": "0x5728587cf52789c2d62011e33786ff9aa6dbcf9e91c2f85e4a0da68593e19652",
+          "timestamp": 1788115991,
+          "executor": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+          "approvers": [
+            {
+              "signer": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+              "kind": "eip712",
+              "position": 0
+            },
+            {
+              "signer": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+              "kind": "eip712",
+              "position": 1
+            },
+            {
+              "signer": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+              "kind": "eip712",
+              "position": 2
+            }
+          ],
+          "unresolved": 0,
+          "serviceApprovers": [
+            "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+            "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+            "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E"
+          ],
+          "agreement": "exact"
+        },
+        {
+          "safeTxHash": "0x1b06f1b5a4478f82fa694f4f1913901f6886f936f6392b595cc970addb9bc3d0",
+          "txHash": "0xc707405fea483f184bf6ee90f7fffa65910f6e204ece488bf09a0b40cfa1a8b2",
+          "timestamp": 1788250907,
+          "executor": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+          "approvers": [
+            {
+              "signer": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+              "kind": "eip712",
+              "position": 0
+            },
+            {
+              "signer": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
+              "kind": "eip712",
+              "position": 1
+            },
+            {
+              "signer": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+              "kind": "eip712",
+              "position": 2
+            }
+          ],
+          "unresolved": 0,
+          "serviceApprovers": [
+            "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
+            "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
+            "0x52DA28d9289C3589239285700B92CdFCC5b74D99"
+          ],
+          "agreement": "exact"
+        }
+      ],
+      "nonces": {
+        "0x0a46c653cb7901ecfe10bef820bacba0a974463e": 85,
+        "0x52da28d9289c3589239285700b92cdfcc5b74d99": 30,
+        "0xb9367abe3ef4bd498b8fbafc239f146d4ee98b98": 25
+      },
+      "coverage": {
+        "requestedBlocks": 350000,
+        "coveredBlocks": 349969,
+        "failedRanges": 0,
+        "complete": true
+      },
+      "summary": {
+        "transactionsRecovered": 3,
+        "signerSlotsRecovered": 9,
+        "unresolvedWords": 0,
+        "crossChecked": 3,
+        "exactSetMatches": 3,
+        "agreementRate": 1,
+        "invisibleApprovers": [],
+        "nonOwnerExecutors": []
+      },
+      "note": "Approvers recovered from execTransaction calldata for 3 transaction(s) across 349,969 blocks searched. 3 cross-checked against the Safe Transaction Service, an independent derivation of the same fact."
     },
     "tested": {
       "independence": [
@@ -367,6 +499,7 @@
         "Module-executed transactions bypass owner signatures entirely and are out of scope for independence.",
         "Timing dependence cannot distinguish one operator from two people in the same meeting.",
         "Exposure covers 3 standardized deployments only. A Safe with no account there may still hold value elsewhere.",
+        "Approver recovery covers a recent block window, not the Safe's whole history, because public RPCs cap log queries at 10k blocks.",
         "Confirmations recorded within 5s of execution are treated as undated: signatures gathered offchain and posted together would otherwise register as perfect timing coupling."
       ]
     }
@@ -375,13 +508,13 @@
     "paid": true,
     "mode": "facilitator",
     "payer": "0.0.10391251",
-    "transaction": "0.0.7162784@1788710693.178612624",
+    "transaction": "0.0.7162784@1788972538.134755774",
     "network": "hedera:testnet",
     "amount": "16200000",
     "hbar": "0.162000",
     "asset": "0.0.0",
-    "explorer": "https://hashscan.io/testnet/transaction/0.0.7162784@1788710693.178612624",
-    "verifiedAt": 1788710704
+    "explorer": "https://hashscan.io/testnet/transaction/0.0.7162784@1788972538.134755774",
+    "verifiedAt": 1788972545
   },
   "quote": {
     "amount": "16200000",
@@ -408,7 +541,7 @@
     "chain": "ethereum",
     "method": "1.0.0",
     "digest": "0x8e33025c470c93a244d2ba8694bca334",
-    "at": 1788710741,
+    "at": 1788972598,
     "metrics": {
       "threshold": 3,
       "owners": 3,
@@ -420,12 +553,12 @@
       "dependentPairs": 0,
       "txWindow": 32
     },
-    "bodyHash": "0x3e28da242b843bb4c3e1843c98144b70057855a6d94c076a1e4b0ba4f45930ce"
+    "bodyHash": "0xcccf9fe75a2c611ffb8434722178de7dd6b9e68ecca454efef4a12895034162b"
   },
   "receipt": {
     "submitted": true,
     "topicId": "0.0.10392885",
-    "sequenceNumber": "4",
+    "sequenceNumber": "13",
     "consensusTimestamp": null,
     "explorer": "https://hashscan.io/testnet/topic/0.0.10392885"
   }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 
-const API = '/api'
+// Behind the vite proxy in development; a full origin (VITE_API_BASE) when deployed statically.
+const API: string = (import.meta as any).env?.VITE_API_BASE ?? '/api'
 const short = (a: string) => `${a.slice(0, 10)}...${a.slice(-6)}`
 const fmtP = (p: number) => (p < 0.001 ? '<0.001' : p.toFixed(3))
 const key2 = (a: string, b: string) => [a.toLowerCase(), b.toLowerCase()].sort().join('|')
@@ -32,6 +33,14 @@ export default function App() {
   const [step, setStep] = useState('')
   const [err, setErr] = useState('')
   const [resolution, setResolution] = useState<any>(null)
+  // A prepaid credit token, bought with `npm run agent:subscribe`. Kept in this browser only.
+  const [token, setToken] = useState<string>(() => {
+    try { return localStorage.getItem('rollcall.token') ?? '' } catch { return '' }
+  })
+  const saveToken = (t: string) => {
+    setToken(t)
+    try { t ? localStorage.setItem('rollcall.token', t) : localStorage.removeItem('rollcall.token') } catch {}
+  }
 
   useEffect(() => {
     fetch(`${API}/method/calibration`).then((r) => r.json()).then(setCalib).catch(() => {})
@@ -53,9 +62,17 @@ export default function App() {
       const q = await (await fetch(`${API}/quote/${chain}/${target}`)).json()
       if (q.error) throw new Error(q.error)
       setStep('recovering approvers, testing independence, dating signers')
-      const res = await fetch(`${API}/report/${chain}/${target}?max=200&perms=4000`, { headers: { 'X-PAYMENT': 'demo' } })
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+      const res = await fetch(`${API}/report/${chain}/${target}?max=200&perms=4000`, { headers })
       const body = await res.json()
-      if (res.status === 402) throw new Error('402 payment required. Pay with: npm run agent')
+      if (res.status === 402) {
+        const price = body.extra?.hbar ? `${body.extra.hbar} HBAR on ${body.accepts?.[0]?.network}` : 'payment'
+        throw new Error(
+          token
+            ? `402: this token has no credits left. Buy more with npm run agent:subscribe and paste the new token below.`
+            : `402 payment required: ${price}. Pay per report from an agent (npm run agent), or buy credits (npm run agent:subscribe) and paste the token below.`,
+        )
+      }
       if (body.error) throw new Error(body.error)
       setData(body)
     } catch (e: any) { setErr(e.message ?? String(e)) }
@@ -98,6 +115,12 @@ export default function App() {
             <div className="samples">
               <span className="lbl">live examples</span>
               {SAMPLES.map((s) => <button key={s.addr} className="chip" onClick={() => { setAddr(s.addr); run(s.addr) }}>{s.label}</button>)}
+            </div>
+            <div className="samples">
+              <span className="lbl">credit token</span>
+              <input className="tokin" value={token} onChange={(e) => saveToken(e.target.value.trim())}
+                     placeholder="rc_... from npm run agent:subscribe, or leave empty to see the x402 quote" spellCheck={false} />
+              {health?.x402 && <span className="note">reports settle on {health.x402.network}</span>}
             </div>
 
             {err && <div className="panel err pad" style={{ marginBottom: 24 }}>{err}</div>}

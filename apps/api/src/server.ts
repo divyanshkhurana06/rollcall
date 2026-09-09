@@ -9,6 +9,7 @@ import { loadProtocolScan } from '../../../packages/core/src/protocolScan.js'
 import { resolveTarget } from '../../../packages/core/src/resolve.js'
 import type { ChainKey } from '../../../packages/core/src/chain.js'
 import { gate, quote, x402Config } from './x402.js'
+import { describe, issue } from './subscriptions.js'
 import { buildAttestation, submitAttestation, readArchive } from './hcs.js'
 
 const app = express()
@@ -19,8 +20,54 @@ const cache = new Map<string, { at: number; report: any }>()
 const TTL = 1000 * 60 * 10
 
 app.get('/health', (_req, res) =>
-  res.json({ ok: true, service: 'rollcall', x402: { network: x402Config.network, asset: x402Config.asset, facilitator: x402Config.facilitator }, hcsTopic: process.env.HCS_TOPIC_ID ?? null }),
+  res.json({
+    ok: true, service: 'rollcall',
+    x402: { network: x402Config.network, asset: x402Config.asset, facilitator: x402Config.facilitator, payTo: x402Config.payTo || null },
+    hcsTopic: process.env.HCS_TOPIC_ID ?? null,
+    discovery: '/.well-known/x402',
+  }),
 )
+
+/**
+ * Free: how an agent finds this service without a human reading docs.
+ *
+ * Every paid resource, how it is priced, which network settles it, where the audit trail lives,
+ * and how to buy credits for a runtime that cannot sign. The manifest is what a directory would
+ * index.
+ */
+app.get('/.well-known/x402', (_req, res) => {
+  const topic = process.env.HCS_TOPIC_ID ?? null
+  const perReport = quote({ signers: 8, txs: 150, chains: 1, permutations: 10_000 })
+  res.json({
+    x402Version: 2,
+    service: 'rollcall',
+    description: 'Control surface reports for protocol multisigs: honest quorum, dark signers, time to harm, value at risk. Every number tiered as observed, tested or inferred.',
+    network: x402Config.network,
+    asset: x402Config.asset,
+    payTo: x402Config.payTo || null,
+    facilitator: x402Config.facilitator,
+    pricing: {
+      model: 'metered by work',
+      formula: 'base + perPair * C(signers, 2) + perTx * min(txs, 500) + perChain * chains',
+      ratesHbar: { base: x402Config.base, perPair: x402Config.perPair, perTx: x402Config.perTx, perChain: x402Config.perChain },
+      exampleHbar: { '8 signers, 150 txs, 1 chain': perReport.hbar },
+    },
+    resources: [
+      { method: 'GET', path: '/quote/{chain}/{address}', paid: false, description: 'exact price for a report, with the breakdown' },
+      { method: 'GET', path: '/report/{chain}/{address}', paid: true, pay: ['X-PAYMENT (x402 exact, per request)', 'Authorization: Bearer <token> (prepaid credit)'], description: 'the report. Attested to HCS on delivery.' },
+      { method: 'POST', path: '/subscribe?credits={n}', paid: true, pay: ['X-PAYMENT'], description: 'buy n report credits, get a bearer token. For runtimes that cannot sign, such as an enclave.' },
+      { method: 'GET', path: '/subscription', paid: false, description: 'credits left on a bearer token' },
+      { method: 'GET', path: '/resolve/{chain}/{address}', paid: false, description: 'what was pasted: an EOA, a Safe, or a contract and the Safe above it' },
+      { method: 'GET', path: '/protocols', paid: false, description: 'the protocol scan: who controls them and what they hold' },
+      { method: 'GET', path: '/leaderboard', paid: false, description: 'declared vs effective quorum across a population of Safes' },
+      { method: 'GET', path: '/archive?target={address}', paid: false, description: 'the HCS attestation history for a target' },
+      { method: 'GET', path: '/method/calibration', paid: false, description: 'false positive rate and power of the independence test' },
+    ],
+    audit: topic ? { hcsTopic: topic, explorer: `https://hashscan.io/${process.env.HEDERA_NETWORK ?? 'testnet'}/topic/${topic}` } : null,
+    agents: { mcp: { transport: 'stdio', command: 'npm run mcp', tools: ['who_controls', 'signer_liveness', 'independence_test', 'effective_quorum', 'method_calibration'] } },
+    source: 'https://github.com/divyanshkhurana06/rollcall',
+  })
+})
 
 /**
  * Free: work out what was pasted.
@@ -83,6 +130,37 @@ app.get('/leaderboard', (_req, res) => {
 /** Free: the attestation archive. The scan is commodity; the time series is not. */
 app.get('/archive', async (req, res) => res.json(await readArchive(req.query.target as string | undefined)))
 
+/**
+ * Paid: prepaid credits.
+ *
+ * Priced at the report cap, so a credit is never worth less than the work it buys. Bearer tokens
+ * are not accepted here: credits are bought with a signature, not with other credits.
+ */
+app.post(
+  '/subscribe',
+  gate((req) => ({ signers: 8, txs: 150, chains: 1, permutations: 10_000, count: Math.min(100, Math.max(1, Number(req.query.credits ?? 10))) }), { allowToken: false }),
+  (req, res) => {
+    const settlement = (req as any).settlement
+    const credits = (req as any).quote.units.count as number
+    const s = issue(credits, { payer: settlement?.payer, transaction: settlement?.transaction })
+    res.json({
+      token: s.token,
+      credits: s.credits,
+      settlement,
+      use: 'Authorization: Bearer <token> on GET /report/{chain}/{address}',
+    })
+  },
+)
+
+/** Free: what a token has left. */
+app.get('/subscription', (req, res) => {
+  const auth = req.header('Authorization')
+  if (!auth?.startsWith('Bearer ')) return res.status(400).json({ error: 'Authorization: Bearer <token> required' })
+  const d = describe(auth.slice(7).trim())
+  if (!d) return res.status(404).json({ error: 'unknown token' })
+  res.json(d)
+})
+
 /** Paid: the report. */
 app.get(
   '/report/:chain/:address',
@@ -134,5 +212,7 @@ app.listen(port, () => {
   console.log(`  GET /report/:chain/:address      x402 gated (${x402Config.network})`)
   console.log(`  GET /method/calibration          free - FPR + power`)
   console.log(`  GET /archive?target=0x...          free - HCS attestation history`)
+  console.log(`  POST /subscribe?credits=N        x402 gated - prepaid credits as a bearer token`)
+  console.log(`  GET /.well-known/x402            free - discovery manifest`)
   if (x402Config.devBypass) console.log(`  ! X402_DEV_BYPASS=1 - payments not enforced`)
 })
