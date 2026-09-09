@@ -41,6 +41,7 @@ Caused by:
 | **Chainlink's own `cre init` confidential scaffold, unmodified** | **traps** |
 | **A plain NON-TEE workflow (kv-store template), SDK 1.20.0** | **traps, same wasm offsets** |
 | Any of the above with `--no-config` | traps |
+| SDK 1.14.0, 1.16.0, 1.18.0, 1.19.1, 1.20.0 | **all trap** |
 | Any of the above with `.env` removed | fails earlier and cleanly, at the secrets step |
 
 The last two rows are the ones that matter. **A non-TEE workflow trapping at the same wasm offsets
@@ -51,8 +52,11 @@ at shared SDK bootstrap code rather than at anything user-written.
 An earlier version of this document blamed confidential workflows specifically. That was wrong, and
 testing a plain workflow is what corrected it.
 
-Environment: macOS arm64, Node v22.22.3, Bun 1.2.15, CRE CLI v1.32.0 and v1.26.0, SDK 1.18.0 /
-1.19.1 / 1.20.0, javy plugin 1.7.0 (the version the SDK pins).
+Five SDK versions spanning 1.14.0 to 1.20.0 were tested on the same plain non-TEE workflow. All
+five trap. The javy plugin is 1.7.0, which is the version the SDK itself pins, so it is not a
+plugin mismatch either.
+
+Environment: macOS arm64, Node v22.22.3, Bun 1.2.15, CRE CLI v1.32.0 and v1.26.0.
 
 ## What stands in its place
 
