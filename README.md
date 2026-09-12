@@ -293,7 +293,11 @@ npm run cover                                                   # issue a cover 
 
 **Hosted:** [rollcall-pi.vercel.app](https://rollcall-pi.vercel.app) serves the web and the API from
 one domain (`/api/...`, `/.well-known/x402`). `vercel.json` is the whole deployment; `Dockerfile` and
-`render.yaml` are there for anyone who prefers a container.
+`render.yaml` are there for anyone who prefers a container. One honest caveat about the hosted copy:
+it is serverless, so credit tokens and renewal registrations live in the memory of the instance
+that created them (plus whatever `ROLLCALL_TOKENS` seeds). Reports, payments, attestations and the
+signal are unaffected, because their state is on Hedera. A local `npm run api` persists everything
+to `data/`.
 
 No API keys are required to run the core. Everything above works against public endpoints.
 
