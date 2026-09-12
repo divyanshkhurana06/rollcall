@@ -35,8 +35,8 @@ npm run protect
 # 8. the live challenge position
 npm run challenge -- status
 
-# 9. the harness: doctor before and after
-cd /tmp/hedera-harness && git checkout master && npm run harness -- doctor; git checkout doctor-verify-hedera-credentials && npm run harness -- doctor
+# 9. the harness: doctor before and after, one script
+bash docs/harness-contribution/demo.sh
 ```
 
 Expected shapes: scene 3 prints `PAID AND SERVED`, a transaction id, and an HCS sequence number.
