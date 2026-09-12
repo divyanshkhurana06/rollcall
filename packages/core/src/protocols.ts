@@ -62,4 +62,22 @@ export const PROTOCOLS: ProtocolTarget[] = [
   { protocol: 'Aave v3',      role: 'Pool',              address: '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2', category: 'lending', source: 'aave docs' },
   { protocol: 'Compound v3',  role: 'USDC Comet',        address: '0xc3d688B66703497DAA19211EEdff47f25384cdc3', category: 'lending', source: 'compound docs' },
   { protocol: 'Uniswap v3',   role: 'Factory',           address: '0x1F98431c8aD98523631AE4a59f267346ea31F984', category: 'dex', source: 'uniswap docs' },
+
+  // ---- Added from L2Beat's discovery output: the same addresses L2Beat's own pages resolve ----
+  { protocol: 'Blast', role: 'L1 Portal', address: '0x0Ec68c5B10F21EFFb74f2A5C61DFe6b08C0Db6Cb', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Mantle', role: 'L1 Portal', address: '0xc54cb22944F2bE476E02dECfCD7e3E7d3e15A8Fb', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Mint', role: 'L1 Portal', address: '0x59625d1FE0Eeb8114a4d13c863978F39b3471781', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Swell', role: 'L1 Portal', address: '0x758E0EE66102816F5C3Ec9ECc1188860fbb87812', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Zircuit', role: 'L1 Portal', address: '0x17bfAfA932d2e23Bd9B909Fd5B4D2e2a27043fb1', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Kroma', role: 'L1 Bridge', address: '0x827962404D7104202C5aaa6b929115C8211d9596', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Metis', role: 'L1 Bridge', address: '0x3980c9ed79d2c191A89E02Fa3529C60eD6e9c04b', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Linea', role: 'Rollup', address: '0xd19d4B5d358258f05D7B411E21A1460D11B0876F', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Linea', role: 'Token Bridge', address: '0x051F1D88f0aF5763fB888eC4378b4D8B29ea3319', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Scroll', role: 'Rollup', address: '0xa13BAF47339d63B743e7Da8741db5456DAc1E556', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Scroll', role: 'L1 ETH Gateway', address: '0x7F2b8C31F88B6006c382775eea88297Ec1e3E905', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Starknet', role: 'Core', address: '0xc662c410C0ECf747543f5bA90660f6ABeBD9C8c4', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Starknet', role: 'ETH Bridge', address: '0xae0Ee0A63A2cE6BaeEFFE56e7714FB4EFE48D419', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'Arbitrum One', role: 'Inbox', address: '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+  { protocol: 'zkSync Era', role: 'L1 ERC20 Bridge', address: '0x57891966931Eb4Bb6FB81430E6cE0A03AAbDe063', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
+
 ]

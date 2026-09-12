@@ -27,7 +27,24 @@ const HOSTS: Partial<Record<ChainKey, string>> = {
   gnosis: 'https://safe-transaction-gnosis-chain.safe.global',
 }
 
+/** The same service behind Safe's API gateway, for when the per-chain host is unreachable. */
+const GATEWAY: Partial<Record<ChainKey, string>> = {
+  ethereum: 'https://api.safe.global/tx-service/eth',
+  optimism: 'https://api.safe.global/tx-service/oeth',
+  arbitrum: 'https://api.safe.global/tx-service/arb1',
+  base: 'https://api.safe.global/tx-service/base',
+  polygon: 'https://api.safe.global/tx-service/matic',
+  gnosis: 'https://api.safe.global/tx-service/gno',
+}
+
 export const supportedByService = (c: ChainKey) => Boolean(HOSTS[c])
+
+/** Rewrites a per-chain service URL onto the gateway. */
+function viaGateway(url: string, chain: ChainKey): string | null {
+  const host = HOSTS[chain]
+  const gw = GATEWAY[chain]
+  return host && gw && url.startsWith(host) ? gw + url.slice(host.length) : null
+}
 
 export interface Confirmation {
   owner: `0x${string}`
@@ -54,15 +71,23 @@ export interface ServiceSafe {
   nonce: number
 }
 
-async function get(url: string, tries = 3): Promise<any> {
+async function get(url: string, tries = 3, chain?: ChainKey): Promise<any> {
   let lastErr: unknown
+  const candidates = [url, chain ? viaGateway(url, chain) : null].filter((u): u is string => Boolean(u))
   for (let i = 0; i < tries; i++) {
-    try {
-      const res = await fetch(url, { headers: { accept: 'application/json' }, redirect: 'follow' })
-      if (res.status === 429) { await sleep(700 * (i + 1)); continue }
-      if (!res.ok) throw new Error(`${res.status} ${url}`)
-      return await res.json()
-    } catch (e) { lastErr = e; await sleep(400 * (i + 1)) }
+    for (const u of candidates) {
+      try {
+        const res = await fetch(u, { headers: { accept: 'application/json' }, redirect: 'follow' })
+        if (res.status === 429) { await sleep(700 * (i + 1)); continue }
+        if (!res.ok) throw new Error(`${res.status} ${u}`)
+        return await res.json()
+      } catch (e: any) {
+        lastErr = e
+        // A definitive answer from the service (404 and friends) is final; a dead host is not.
+        if (/^(404|400|422) /.test(String(e?.message ?? ''))) throw e
+      }
+    }
+    await sleep(400 * (i + 1))
   }
   throw lastErr
 }
@@ -74,7 +99,7 @@ export async function fetchSafe(chain: ChainKey, address: string): Promise<Servi
   if (!host) return null
   try {
     const a = getAddress(address as `0x${string}`) // service rejects non-checksummed input
-    const d = await get(`${host}/api/v1/safes/${a}/`)
+    const d = await get(`${host}/api/v1/safes/${a}/`, 3, chain)
     return {
       address: a,
       owners: (d.owners ?? []).map((o: string) => getAddress(o as `0x${string}`)),
@@ -82,7 +107,13 @@ export async function fetchSafe(chain: ChainKey, address: string): Promise<Servi
       version: d.version ?? null,
       nonce: Number(d.nonce ?? 0),
     }
-  } catch { return null }
+  } catch (e: any) {
+    // 404 is the service's answer: not a Safe. Anything else, after retries, is the service's
+    // problem, and it must not be reported as "not a Safe".
+    const msg = String(e?.message ?? '')
+    if (/^(404|400|422) /.test(msg) || /invalid|checksum/i.test(msg)) return null
+    throw e
+  }
 }
 
 /** Executed multisig transactions, newest first, paged. */
@@ -94,7 +125,7 @@ export async function fetchServiceTxs(chain: ChainKey, address: string, max = 30
   let url: string | null = `${host}/api/v1/safes/${a}/multisig-transactions/?limit=100&executed=true`
 
   while (url && out.length < max) {
-    const page: any = await get(url)
+    const page: any = await get(url, 3, chain)
     for (const r of page.results ?? []) {
       if (!r.isExecuted) continue
       out.push({
@@ -126,7 +157,7 @@ export async function lastServiceActivity(chain: ChainKey, address: string): Pro
   if (!host) return null
   try {
     const a = getAddress(address as `0x${string}`)
-    const d = await get(`${host}/api/v1/safes/${a}/multisig-transactions/?limit=1&executed=true`)
+    const d = await get(`${host}/api/v1/safes/${a}/multisig-transactions/?limit=1&executed=true`, 3, chain)
     return ts(d.results?.[0]?.executionDate)
   } catch { return null }
 }

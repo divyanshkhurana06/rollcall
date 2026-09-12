@@ -221,13 +221,13 @@ export async function verifyAndSettle(header: string, q: Quote): Promise<Settlem
   }
 }
 
-export function gate(
-  estimator: (req: Request) => { signers: number; txs: number; chains: number; permutations: number; count?: number },
-  options: { allowToken?: boolean } = {},
-) {
+type Shape = { signers: number; txs: number; chains: number; permutations: number; count?: number }
+
+export function gate(estimator: (req: Request) => Shape | Promise<Shape>, options: { allowToken?: boolean } = {}) {
   const allowToken = options.allowToken ?? true
   return async (req: Request, res: Response, next: NextFunction) => {
-    const q = quote(estimator(req))
+    // Priced by the real shape of the job, so the 402 says exactly what /quote said.
+    const q = quote(await estimator(req))
     ;(req as any).quote = q
     const resource = req.originalUrl
 

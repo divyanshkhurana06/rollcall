@@ -23,7 +23,7 @@ const SAMPLES = [
 ]
 
 export default function App() {
-  const [view, setView] = useState<'protocols' | 'board' | 'report' | 'challenge'>('protocols')
+  const [view, setView] = useState<'protocols' | 'board' | 'report' | 'challenge' | 'ask'>('protocols')
   const [addr, setAddr] = useState(SAMPLES[0].addr)
   const [chain, setChain] = useState('ethereum')
   const [data, setData] = useState<any>(null)
@@ -90,7 +90,7 @@ export default function App() {
       const body = await res.json()
       if (!res.ok) throw new Error(body.error ?? `agent failed (${res.status})`)
       setAgentRun(body)
-      if (body.report) { setData({ report: body.report, since: body.since, settlement: body.settlement, receipt: body.receipt }); setResolution({ kind: 'safe', safe: addr, message: 'paid for by the demo agent' }) }
+      if (body.report) { setData({ report: body.report, since: body.since, narrative: body.narrative, settlement: body.settlement, receipt: body.receipt }); setResolution({ kind: 'safe', safe: addr, message: 'paid for by the demo agent' }) }
     } catch (e: any) { setErr(e.message ?? String(e)) }
     finally { setAgentBusy(false); setStep('') }
   }
@@ -105,6 +105,7 @@ export default function App() {
           <div className="tag">Who can take everything, how fast, and are they still awake?</div>
           <div className="mast-spacer" />
           <div className="tabs">
+            <button className={view === 'ask' ? 'tab on' : 'tab'} onClick={() => setView('ask')}>Ask</button>
             <button className={view === 'protocols' ? 'tab on' : 'tab'} onClick={() => setView('protocols')}>Protocols</button>
             <button className={view === 'board' ? 'tab on' : 'tab'} onClick={() => setView('board')}>All Safes</button>
             <button className={view === 'report' ? 'tab on' : 'tab'} onClick={() => setView('report')}>Report</button>
@@ -118,6 +119,8 @@ export default function App() {
         {view === 'protocols' && <Protocols onInspect={(a) => { setAddr(a); run(a) }} />}
         {view === 'board' && <Board onInspect={(a) => { setAddr(a); run(a) }} health={health} />}
 
+        {view === 'protocols' && <Changes />}
+        {view === 'ask' && <Ask onReport={(d: any) => { setData(d); setAddr(d.report?.target?.address ?? addr); setResolution({ kind: 'safe', safe: d.report?.target?.address, message: 'paid for by the agent' }); setView('report') }} />}
         {view === 'challenge' && <Challenge />}
         {view === 'report' && (
           <>
@@ -183,7 +186,7 @@ export default function App() {
 
             {r && (
               <div className="fade">
-                <Headline r={r} since={data?.since} />
+                <Headline r={r} since={data?.since} narrative={data?.narrative} />
                 <div className="cols">
                   <div>
                     <Liveness r={r} />
@@ -421,13 +424,26 @@ function Since({ since }: any) {
   )
 }
 
-function Headline({ r, since }: any) {
+/** The report in sentences, before the grid. Each sentence is one number, with its tier named. */
+function Narrative({ n }: any) {
+  if (!n) return null
+  return (
+    <div className={`panel pad narrative ${n.verdict}`} style={{ marginBottom: 12 }}>
+      <div className="res-kind">{n.verdict === 'critical' ? 'critical' : n.verdict === 'warning' ? 'worth knowing' : 'sound'} · in plain words</div>
+      <div className="narr-head">{n.headline}</div>
+      <ul className="narr-list">{n.sentences.map((t: string, i: number) => <li key={i}>{t}</li>)}</ul>
+    </div>
+  )
+}
+
+function Headline({ r, since, narrative }: any) {
   const R = r.reachability
   const eq = Math.min(...r.inferred.quorumCurve.map((c: any) => c.effectiveQuorum))
   const dep = r.tested.independence.filter((p: any) => p.pValue < 0.01 && p.excess > 0).length
   const cls = (crit: boolean, warn: boolean) => (crit ? 'crit' : warn ? 'warn' : 'ok')
   return (
     <div className="sec">
+      <Narrative n={narrative} />
       <Since since={since} />
       <div className="panel"><div className="headline">
         <div className="stat"><div className="k">Declared threshold</div>
@@ -866,6 +882,108 @@ function Challenge() {
 
       <div className="note" style={{ margin: '18px 2px 0' }}>
         Proof it runs in the CRE engine: <code>cre/SIMULATION-RUN.txt</code>. Why it did not for three days: <code>cre/SIMULATION.md</code>. {c.evidence.tests} tests.
+      </div>
+    </div>
+  )
+}
+
+
+const EXAMPLES = [
+  'Is the Base bridge safe to use?',
+  'Who can upgrade Arbitrum, and are they awake?',
+  'Which protocols have no timelock and zero margin?',
+  'What changed on World Chain since the last attestation?',
+]
+
+/** Ask a question; watch the agent resolve, price, read The Graph, pay on Hedera, and answer. */
+function Ask({ onReport }: any) {
+  const [q, setQ] = useState(EXAMPLES[0])
+  const [steps, setSteps] = useState<any[]>([])
+  const [answer, setAnswer] = useState('')
+  const [done, setDone] = useState<any>(null)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+
+  function run(question = q) {
+    setQ(question); setSteps([]); setAnswer(''); setDone(null); setErr(''); setBusy(true)
+    const es = new EventSource(`${API}/ask?q=${encodeURIComponent(question)}`)
+    es.addEventListener('step', (e: any) => {
+      const st = JSON.parse(e.data)
+      setSteps((prev) => { const i = prev.findIndex((p) => p.name === st.name); if (i >= 0) { const c = [...prev]; c[i] = st; return c } return [...prev, st] })
+    })
+    es.addEventListener('token', (e: any) => setAnswer((a) => a + JSON.parse(e.data)))
+    es.addEventListener('answer', (e: any) => setAnswer(JSON.parse(e.data)))
+    es.addEventListener('done', (e: any) => { setDone(JSON.parse(e.data)); setBusy(false); es.close() })
+    es.addEventListener('error', (e: any) => { try { setErr(JSON.parse(e.data)) } catch { setErr('connection closed') } setBusy(false); es.close() })
+  }
+
+  const label: Record<string, string> = { resolve: 'resolve', quote: 'price', graph: 'The Graph', pay: 'x402 on Hedera', scan: 'protocol scan' }
+  return (
+    <div className="fade" style={{ marginTop: 26 }}>
+      <div className="hero">
+        <div className="sec-title">Ask, and watch the agent earn the answer</div>
+        <div className="note" style={{ maxWidth: 820 }}>
+          Name a protocol or paste an address. The agent works out which keys control it, prices the report by the work it takes,
+          reads what money sits behind those keys through The Graph, pays for the report over x402 on Hedera with its own wallet,
+          and answers from the numbers, tier by tier. Every step is real and every payment is on chain.
+        </div>
+      </div>
+      <div className="search" style={{ marginTop: 14 }}>
+        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && !busy && run()} placeholder="is the Base bridge safe to use?" />
+        <button className="btn" onClick={() => run()} disabled={busy}>{busy ? 'Working' : 'Ask'}</button>
+      </div>
+      <div className="samples">
+        <span className="lbl">try</span>
+        {EXAMPLES.map((x) => <button key={x} className="chip" disabled={busy} onClick={() => run(x)}>{x}</button>)}
+      </div>
+      {err && <div className="panel err pad" style={{ marginTop: 14 }}>{err}</div>}
+      {steps.length > 0 && (
+        <div className="panel pad" style={{ marginTop: 14 }}>
+          {steps.map((st) => (
+            <div key={st.name} className="ask-step">
+              <span className={`pip ${st.done ? 'ok' : 'busy'}`} />
+              <span className="k">{label[st.name] ?? st.name}</span>
+              <span className="v">{st.text}</span>
+              {st.settlement?.explorer && <a className="addr" href={st.settlement.explorer} target="_blank" rel="noreferrer">tx</a>}
+              {st.receipt?.explorer && <a className="addr" href={st.receipt.explorer} target="_blank" rel="noreferrer">HCS</a>}
+            </div>
+          ))}
+        </div>
+      )}
+      {answer && (
+        <div className="panel pad" style={{ marginTop: 14 }}>
+          <div className="res-kind">the answer, from a report the agent paid for</div>
+          <div className="ask-answer">{answer}</div>
+          {done?.report && <button className="btn" style={{ marginTop: 12 }} onClick={() => onReport(done)}>open the full report</button>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+
+/** The archive as a feed. Every delivered report left an attestation; this is the latest few, with what moved. */
+function Changes() {
+  const [feed, setFeed] = useState<any>(null)
+  useEffect(() => { fetch(`${API}/changes`).then((r) => r.json()).then(setFeed).catch(() => {}) }, [])
+  if (!feed?.recent?.length) return null
+  const when = (t: number) => { const s = Math.floor(Date.now() / 1000) - t; return s < 3600 ? `${Math.max(1, Math.round(s / 60))} min ago` : s < 86400 ? `${Math.round(s / 3600)} h ago` : `${Math.round(s / 86400)} d ago` }
+  return (
+    <div className="sec" style={{ marginTop: 30 }}>
+      <div className="sec-head"><div className="sec-title">Recent attestations</div>
+        <div className="sec-sub">every delivered report writes one to HCS topic {feed.topicId}. The archive is what makes "since when" provable.</div></div>
+      <div className="panel">
+        {feed.recent.slice(0, 12).map((r: any) => (
+          <div key={r.sequenceNumber} className="feed-row">
+            <span className="since">{when(r.at)}</span>
+            <span className="pname">{r.label ?? short(r.target)}</span>
+            <span className="addr">{r.metrics.threshold} of {r.metrics.owners} · honest {r.metrics.effectiveQuorumMin} · {r.metrics.darkSigners} dark · {r.metrics.canReachThreshold ? 'reachable' : 'unreachable'}</span>
+            <span className="feed-delta">
+              {r.previousAt === null ? <span className="note">first attestation</span> : r.changes.length === 0 ? <span className="note">no change</span> : r.changes.map((c: any) => <span key={c.metric} className="delta">{LABEL[c.metric] ?? c.metric} {String(c.from)} → {String(c.to)}</span>)}
+            </span>
+            <a className="rowbtn" href={`https://hashscan.io/testnet/topic/${feed.topicId}`} target="_blank" rel="noreferrer">seq {r.sequenceNumber}</a>
+          </div>
+        ))}
       </div>
     </div>
   )

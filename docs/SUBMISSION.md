@@ -27,6 +27,11 @@ Every number carries its tier: observed (read from chain), tested (a calibrated 
 with a published false positive rate), or inferred (the effective quorum curve). Nothing is a made
 up score. The calibration endpoint is public so the metrics can be checked, not trusted.
 
+Ask it a question. "Is the Base bridge safe to use?" and an agent resolves the contract to its keys,
+prices the report, reads what money sits behind those keys through The Graph, pays for the report
+over x402 on Hedera with its own wallet, and answers in plain English from the numbers, with every
+step on screen. Every report also comes back as sentences, one per number, tier named.
+
 It is a service agents can pay for. Reports are priced by the work they take and settled over x402
 on Hedera in HBAR or in an HTS token with a real fee schedule; prepaid credits and Scheduled
 Transaction renewals cover the runtimes that cannot sign. Every delivered report is attested to

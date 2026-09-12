@@ -161,3 +161,22 @@ export async function attestationDelta(target: string): Promise<AttestationDelta
   }
   return { target, latestAt: latest.at, previousAt: previous.at, span: latest.at - previous.at, changes }
 }
+
+/**
+ * The archive as a feed: the most recent attestations across every target, each with the delta
+ * against the previous attestation of the same target. This is what a watcher would subscribe to.
+ */
+export async function recentAttestations(limit = 40) {
+  const archive = await readArchive(undefined, Math.min(100, limit * 3))
+  const rows = (archive.messages as any[]).filter((m) => m?.metrics && typeof m.at === 'number').sort((a, b) => b.at - a.at)
+  const keys = ['threshold', 'owners', 'darkSigners', 'liveSigners', 'canReachThreshold', 'effectiveQuorumMin', 'effectiveQuorumMax', 'dependentPairs']
+  const out: any[] = []
+  for (let i = 0; i < rows.length && out.length < limit; i++) {
+    const m = rows[i]
+    const prev = rows.slice(i + 1).find((x) => x.target?.toLowerCase() === m.target?.toLowerCase())
+    const changes: MetricDelta[] = []
+    if (prev) for (const k of keys) if (m.metrics[k] !== prev.metrics[k]) changes.push({ metric: k, from: prev.metrics[k], to: m.metrics[k] })
+    out.push({ target: m.target, chain: m.chain, at: m.at, sequenceNumber: m.sequenceNumber, digest: m.digest, metrics: m.metrics, previousAt: prev?.at ?? null, changes })
+  }
+  return { available: archive.available, topicId: (archive as any).topicId ?? null, recent: out }
+}

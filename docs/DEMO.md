@@ -8,6 +8,9 @@ the later ones are faster because the earlier ones warmed the caches.
 open https://rollcall-pi.vercel.app
 curl -s https://rollcall-pi.vercel.app/.well-known/x402 | jq '.identity, .resources | length'
 
+# 0. from the hosted page alone: Ask tab, type "is the Base bridge safe to use?", watch the five steps
+#    then Report tab, "pay in RCC", then Enclave tab
+
 # 1. the protocol scan: who controls the protocols, and what they hold
 npm run scan:protocols
 

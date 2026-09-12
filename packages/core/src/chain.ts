@@ -65,6 +65,43 @@ export function client(key: ChainKey): PublicClient {
   return cache.get(key)!
 }
 
+const poolCache = new Map<ChainKey, PublicClient[]>()
+
+/** One client per configured provider, primary first, duplicates removed. */
+export function clients(key: ChainKey): PublicClient[] {
+  if (!poolCache.has(key)) {
+    const { chain, rpcs } = CHAINS[key]
+    const urls = [...new Set(rpcs)]
+    poolCache.set(key, urls.map((rpc) => createPublicClient({ chain, transport: http(rpc, { batch: true, retryCount: 1, timeout: 15_000 }) }) as PublicClient))
+  }
+  return poolCache.get(key)!
+}
+
+/** A transport error is the provider's problem. A revert is the contract's answer. Only the first kind fails over. */
+export function isTransportError(e: any): boolean {
+  const name = String(e?.name ?? '')
+  const msg = String(e?.shortMessage ?? e?.message ?? '').toLowerCase()
+  if (['HttpRequestError', 'TimeoutError', 'RpcRequestError', 'InternalRpcError', 'LimitExceededRpcError', 'ResourceUnavailableRpcError'].includes(name)) return true
+  return /fetch failed|timeout|timed out|429|503|502|rate limit|econnreset|socket hang up|network/.test(msg)
+}
+
+/**
+ * Runs a read against each provider in turn until one answers. A read that fails on every provider
+ * throws, so the caller reports "unreadable" instead of mistaking a dead RPC for an empty slot.
+ */
+export async function withFailover<T>(key: ChainKey, fn: (c: PublicClient) => Promise<T>): Promise<T> {
+  let last: unknown
+  for (const c of clients(key)) {
+    try {
+      return await fn(c)
+    } catch (e) {
+      last = e
+      if (!isTransportError(e)) throw e
+    }
+  }
+  throw last instanceof Error ? last : new Error(`all providers failed for ${key}`)
+}
+
 export interface RawLog {
   address: `0x${string}`
   topics: `0x${string}`[]

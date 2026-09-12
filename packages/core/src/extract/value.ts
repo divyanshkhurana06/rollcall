@@ -1,5 +1,5 @@
 import { getAddress, formatUnits, erc20Abi, type Hex } from 'viem'
-import { client, type ChainKey } from '../chain.js'
+import { withFailover, client, type ChainKey } from '../chain.js'
 
 /**
  * What a control surface actually guards.
@@ -45,18 +45,17 @@ export async function valueAtRisk(chain: ChainKey, address: string, ethUsd?: num
   const a = getAddress(address as Hex)
   const price = ethUsd ?? (await ethPrice())
 
-  let nativeEth = 0
-  try {
-    nativeEth = Number(formatUnits(await c.getBalance({ address: a }), 18))
-  } catch { /* reported as zero, not guessed */ }
+  // A balance that cannot be read on any provider is an error, not zero. Zero here would print as
+  // "this bridge holds nothing", which is the one thing a value column must never say by accident.
+  const nativeEth = Number(formatUnits(await withFailover(chain, (cl) => cl.getBalance({ address: a })), 18))
 
   const holdings: ValueAtRisk['holdings'] = []
   await Promise.all(
     TOKENS.map(async (t) => {
       try {
-        const raw = (await c.readContract({
+        const raw = (await withFailover(chain, (cl) => cl.readContract({
           address: t.address, abi: erc20Abi, functionName: 'balanceOf', args: [a],
-        })) as bigint
+        }))) as bigint
         const amount = Number(formatUnits(raw, t.decimals))
         if (amount <= 0) return
         const usd = t.usd === 0 ? amount * price : amount * t.usd

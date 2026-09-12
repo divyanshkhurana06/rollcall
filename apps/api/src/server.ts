@@ -14,6 +14,8 @@ import { describe, issue } from './subscriptions.js'
 import { register as registerRenewal, check as checkRenewal, list as listRenewals, pendingFor } from './renewals.js'
 import { payFor } from '../../../packages/agent/src/x402client.js'
 import { challengeSnapshot, jsonSafe } from './challenge.js'
+import { narrative } from '../../../packages/core/src/narrative.js'
+import { ask } from './ask.js'
 import { existsSync, readFileSync } from 'node:fs'
 
 /** ERC-8004 registrations, written by `npm run agent:register`. Absent until then. */
@@ -24,7 +26,7 @@ function agentIdentity() {
     return null
   }
 }
-import { buildAttestation, submitAttestation, readArchive, attestationDelta } from './hcs.js'
+import { buildAttestation, submitAttestation, readArchive, attestationDelta, recentAttestations } from './hcs.js'
 
 const app = express()
 app.use(cors())
@@ -72,12 +74,14 @@ app.get('/.well-known/x402', (_req, res) => {
       { method: 'GET', path: '/signal/{chain}/{address}', paid: true, pay: ['X-PAYMENT', 'Authorization: Bearer <token>'], description: 'the governance signal from the cached report, or pending while it computes. Built for ten second budgets.' },
       { method: 'POST', path: '/subscribe?credits={n}', paid: true, pay: ['X-PAYMENT'], description: 'buy n report credits, get a bearer token. For runtimes that cannot sign, such as an enclave.' },
       { method: 'GET', path: '/subscription', paid: false, description: 'credits left on a bearer token' },
+      { method: 'GET', path: '/ask?q=', paid: false, description: 'ask a question in plain English; an agent resolves the protocol, reads exposure through The Graph, pays for the report over x402 and answers. Server-sent events.' },
       { method: 'POST', path: '/demo/agent?chain=&target=&asset=', paid: false, description: 'the service pays itself for a report with its own wallet, so a paid request can be watched from a browser. Rate limited.' },
       { method: 'POST', path: '/renewals', paid: false, description: 'register a Hedera Scheduled Transaction that pays for credits at expiry; credited when the mirror node shows it executed' },
       { method: 'GET', path: '/resolve/{chain}/{address}', paid: false, description: 'what was pasted: an EOA, a Safe, or a contract and the Safe above it' },
       { method: 'GET', path: '/protocols', paid: false, description: 'the protocol scan: who controls them and what they hold' },
       { method: 'GET', path: '/leaderboard', paid: false, description: 'declared vs effective quorum across a population of Safes' },
       { method: 'GET', path: '/archive?target={address}', paid: false, description: 'the HCS attestation history for a target' },
+      { method: 'GET', path: '/changes', paid: false, description: 'the archive as a feed: recent attestations across every target with what changed since the previous one' },
       { method: 'GET', path: '/method/calibration', paid: false, description: 'false positive rate and power of the independence test' },
       { method: 'GET', path: '/challenge', paid: false, description: 'the Chainlink liquidation challenge: live Sepolia position, the five published scenarios, what the workflow would do now' },
       { method: 'GET', path: '/graph/registry', paid: false, description: 'the standardized subgraph registry the exposure query runs across, with the block each was verified at' },
@@ -161,6 +165,17 @@ app.get('/archive', async (req, res) => {
   const target = req.query.target as string | undefined
   const archive = await readArchive(target)
   res.json(target ? { ...archive, since: await attestationDelta(target).catch(() => null) } : archive)
+})
+
+/** Free: the archive as a feed. Recent attestations across every target, with what changed since the previous one. */
+app.get('/changes', async (_req, res) => {
+  const feed = await recentAttestations(40).catch(() => ({ available: false, topicId: null, recent: [] }))
+  const rows: any[] = loadProtocolScan()?.rows ?? []
+  const label = (safe: string) => {
+    const hit = rows.filter((r) => r.safe && r.safe.toLowerCase() === safe.toLowerCase()).sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0))[0]
+    return hit ? `${hit.protocol} ${hit.role}` : null
+  }
+  res.json({ ...feed, recent: feed.recent.map((r: any) => ({ ...r, label: label(r.target) })) })
 })
 
 /** Free: the registry of standardized deployments the exposure query runs across, with provenance. */
@@ -264,7 +279,10 @@ function refreshSignal(chain: ChainKey, address: string) {
 
 app.get(
   '/signal/:chain/:address',
-  gate(() => ({ signers: 8, txs: SIGNAL_MAX, chains: 1, permutations: SIGNAL_PERMS })),
+  gate(async (req) => {
+    const shape = await safeShape(req.params.chain as ChainKey, req.params.address)
+    return { signers: shape.owners, txs: Math.min(shape.nonce, SIGNAL_MAX), chains: 1, permutations: SIGNAL_PERMS }
+  }),
   async (req, res) => {
     const chain = req.params.chain as ChainKey
     const address = req.params.address
@@ -346,6 +364,7 @@ app.post('/demo/agent', async (req, res) => {
       settlement: b.settlement ?? null,
       receipt: b.receipt ?? null,
       since: b.since ?? null,
+      narrative: b.narrative ?? null,
       report: b.report ?? null,
       error: b.error ?? (result.status !== 200 ? `status ${result.status}` : undefined),
     })
@@ -355,6 +374,14 @@ app.post('/demo/agent', async (req, res) => {
     demoBusy = false
   }
 })
+
+/** The protocol scan row whose Safe is this address, so a report can say what the keys control. */
+function protocolContextFor(safe: string) {
+  const scan = loadProtocolScan()
+  const rows: any[] = scan?.rows ?? []
+  const hit = rows.filter((r) => r.safe && r.safe.toLowerCase() === safe.toLowerCase()).sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0))[0]
+  return hit ? { protocol: hit.protocol, role: hit.role, valueUsd: hit.valueUsd, authorityPath: hit.authorityPath, timeToHarmHours: hit.timeToHarmHours, timeToHarmMeasured: hit.timeToHarmMeasured } : null
+}
 
 /** Free: the Chainlink challenge, live. Position on Sepolia, the five scenarios, what the workflow would do. */
 let challengeCache: { at: number; body: any } | null = null
@@ -369,15 +396,48 @@ app.get('/challenge', async (_req, res) => {
   }
 })
 
+/**
+ * Ask a question; watch the agent earn the answer. Server-sent events: step, facts, token, answer, done.
+ */
+let askInFlight = 0
+app.get('/ask', async (req, res) => {
+  if (askInFlight >= 3) return res.status(429).json({ error: 'three questions are already being answered. Try again in a minute.' })
+  const proto = (req.headers['x-forwarded-proto'] as string) ?? 'http'
+  const host = req.headers.host ?? `localhost:${process.env.PORT ?? 8787}`
+  const api = process.env.ROLLCALL_SELF_URL ?? (process.env.VERCEL ? `${proto}://${host}/api` : `http://${host}`)
+  askInFlight += 1
+  try {
+    await ask(req, res, api)
+  } finally {
+    askInFlight -= 1
+  }
+})
+
 /** Paid: the report. */
+/** The shape of the job, from the Safe itself, so the gate prices what /quote priced. */
+const shapeCache = new Map<string, { at: number; owners: number; nonce: number }>()
+async function safeShape(chain: ChainKey, address: string) {
+  const key = `${chain}:${address.toLowerCase()}`
+  const hit = shapeCache.get(key)
+  if (hit && Date.now() - hit.at < 10 * 60_000) return hit
+  const safe = await fetchSafe(chain, address).catch(() => null)
+  const shape = { at: Date.now(), owners: safe?.owners.length ?? 8, nonce: safe?.nonce ?? 250 }
+  shapeCache.set(key, shape)
+  return shape
+}
+
 app.get(
   '/report/:chain/:address',
-  gate((req) => ({
-    signers: 8,
-    txs: Number((req.query.max as string) ?? 250),
-    chains: String(req.query.chains ?? req.params.chain).split(',').length,
-    permutations: Number((req.query.perms as string) ?? 10_000),
-  })),
+  gate(async (req) => {
+    const shape = await safeShape(req.params.chain as ChainKey, req.params.address)
+    const max = Number((req.query.max as string) ?? 250)
+    return {
+      signers: shape.owners,
+      txs: Math.min(shape.nonce, max),
+      chains: String(req.query.chains ?? req.params.chain).split(',').length,
+      permutations: Number((req.query.perms as string) ?? 10_000),
+    }
+  }),
   async (req, res) => {
     const chain = req.params.chain as ChainKey
     const address = req.params.address
@@ -402,8 +462,10 @@ app.get(
       // Compared before this delivery is counted, so "since" always means since the previous one.
       const since = await attestationDelta(address).catch(() => null)
 
+      const safeReport = JSON.parse(JSON.stringify(report, (_k, v) => (typeof v === 'bigint' ? String(v) : v)))
       res.json({
-        report: JSON.parse(JSON.stringify(report, (_k, v) => (typeof v === 'bigint' ? String(v) : v))),
+        report: safeReport,
+        narrative: narrative(safeReport, { protocol: protocolContextFor(address) }),
         settlement: (req as any).settlement,
         quote: (req as any).quote,
         attestation,

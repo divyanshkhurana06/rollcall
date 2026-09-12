@@ -1,5 +1,5 @@
 import { getAddress, parseAbi, type Hex } from 'viem'
-import { client, windowedLogs, type ChainKey } from '../chain.js'
+import { withFailover, isTransportError, client, windowedLogs, type ChainKey } from '../chain.js'
 import { SLOTS, OWNABLE_ABI, TOPICS } from '../abi.js'
 import { fetchSafe } from './safeapi.js'
 
@@ -137,18 +137,21 @@ const addrFromSlot = (word: Hex): `0x${string}` | null => {
   return a.toLowerCase() === ZERO ? null : getAddress(a as Hex)
 }
 
+/** A storage read has no legitimate failure mode. If every provider fails, the surface is unreadable, not empty. */
 async function readSlot(chain: ChainKey, address: `0x${string}`, slot: string) {
-  try {
-    const v = await client(chain).getStorageAt({ address, slot: slot as Hex })
-    return v ? addrFromSlot(v) : null
-  } catch { return null }
+  const v = await withFailover(chain, (c) => c.getStorageAt({ address, slot: slot as Hex }))
+  return v ? addrFromSlot(v) : null
 }
 
+/** A contract without owner() reverts, and that is an answer. A provider that cannot be reached is not. */
 async function readOwner(chain: ChainKey, address: `0x${string}`) {
   try {
-    const o = (await client(chain).readContract({ address, abi: OWNABLE_ABI, functionName: 'owner' })) as `0x${string}`
+    const o = (await withFailover(chain, (c) => c.readContract({ address, abi: OWNABLE_ABI, functionName: 'owner' }))) as `0x${string}`
     return o && o.toLowerCase() !== ZERO ? getAddress(o) : null
-  } catch { return null }
+  } catch (e) {
+    if (isTransportError(e)) throw e
+    return null
+  }
 }
 
 /**

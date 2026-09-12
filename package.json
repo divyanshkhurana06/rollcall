@@ -32,6 +32,7 @@
     "agent:schedule": "tsx packages/agent/src/schedule.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
     "@chainlink/cre-sdk": "^1.19.1",
     "@hashgraph/asset-tokenization-sdk": "^8.0.0",
     "@hashgraph/sdk": "^2.81.0",

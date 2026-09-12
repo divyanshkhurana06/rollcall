@@ -292,7 +292,11 @@ npm run cover                                                   # issue a cover 
 ```
 
 **Hosted:** [rollcall-pi.vercel.app](https://rollcall-pi.vercel.app) serves the web and the API from
-one domain (`/api/...`, `/.well-known/x402`). The Report tab has a *pay in HBAR / pay in RCC* button:
+one domain (`/api/...`, `/.well-known/x402`). The Ask tab takes a question in plain English ("is the
+Base bridge safe to use?") and an agent resolves the protocol to its keys, prices the report, reads
+exposure through The Graph, pays for the report over x402 on Hedera with its own wallet, and answers
+from the numbers, every step streamed as it happens. Every report also comes back in sentences, one
+per number, with its tier named. The Report tab has a *pay in HBAR / pay in RCC* button:
 the service pays itself for a report with its own testnet wallet, through the facilitator, and the
 page shows the 402, the settlement transaction and the HCS receipt. The Enclave tab reads the live
 Chainlink challenge position on Sepolia and walks the five published scenarios. `vercel.json` is the whole deployment; `Dockerfile` and
