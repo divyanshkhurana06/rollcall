@@ -25,7 +25,7 @@ enforces." Report tab, *pay in RCC*. The 402, the settlement, the HCS receipt, o
 to top up 0.61 vETH, and would have unwound the loan if the market's own governance degraded. "No
 price feed reports that."
 
-**2:45** "Forty six contracts, $4.4 billion. $1.9 billion behind zero margin. Mantle: six of fourteen declared, two really decide, seven dark." Stop.
+**2:45** "Forty seven contracts, $4.8 billion. $2.4 billion behind zero margin. Mantle: six of fourteen declared, two really decide, seven dark." Stop.
 
 ## The questions
 

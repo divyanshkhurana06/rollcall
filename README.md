@@ -191,6 +191,7 @@ resolves who can change it, and measures whether that signer set is as large as 
 ```
   protocol         role          value      declared  honest  dark  margin  hidden
   Base             L1 Portal     $1.92B     2/2       2       0     0       0
+  OP Mainnet       ETH Lockbox   $446M      2/2       2       0     0       0
   Mantle           L1 Portal     $409M      6/14      2       7     1       8
   World Chain      L1 Portal     $16M       5/8       4       1     2       1
   Zircuit          L1 Portal     $2M        4/11      1       2     5       1
@@ -198,7 +199,7 @@ resolves who can change it, and measures whether that signer set is as large as 
   Lisk             L1 Portal     $1M        1/1       1       1     -1      0
 ```
 
-**$4.36B across 46 contracts, 29 of them with a Safe in the authority path. $1.93B sits behind a
+**$4.82B across 47 contracts, 31 of them with a Safe in the authority path. $2.38B sits behind a
 signer set with zero margin** - one lost key and that contract can never be upgraded again. **$430M
 sits behind a Safe whose honest quorum is below its declared threshold**: Mantle declares 6 of 14,
 resolves to an honest quorum of 2, and 7 of its 14 signers have shown no onchain signal in 180

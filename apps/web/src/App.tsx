@@ -953,7 +953,7 @@ function Ask({ onReport }: any) {
       )}
       {answer && (
         <div className="panel pad" style={{ marginTop: 14 }}>
-          <div className="res-kind">the answer, from a report the agent paid for</div>
+          <div className="res-kind">{done?.mode === 'report' ? 'the answer, from a report the agent paid for' : 'the answer, from the protocol scan'}</div>
           <div className="ask-answer">{answer}</div>
           {done?.report && <button className="btn" style={{ marginTop: 12 }} onClick={() => onReport(done)}>open the full report</button>}
         </div>

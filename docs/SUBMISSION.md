@@ -20,8 +20,8 @@ awake parties are really required to move the money, against the threshold the p
 
 Base's L1 Portal holds $1.86B. It can be upgraded by a 2-of-2 whose margin is zero, with no
 timelock, and neither signer has ever sent a transaction, so both look dormant on every block
-explorer. Every number in that sentence was read from chain state. Across 46 protocol contracts
-worth $4.36B, $1.93B sits behind a signer set with zero margin, and $430M sits behind a Safe whose
+explorer. Every number in that sentence was read from chain state. Across 47 protocol contracts
+worth $4.82B, $2.38B sits behind a signer set with zero margin, and $431M sits behind a Safe whose
 honest quorum is below what it declares: Mantle says 6 of 14, resolves to 2, and 7 of its signers
 have shown no onchain signal in 180 days.
 

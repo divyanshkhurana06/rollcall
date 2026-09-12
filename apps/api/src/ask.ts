@@ -40,6 +40,8 @@ function scanSummary() {
   const rows: any[] = (scan?.rows ?? []).filter((r) => r.status === 'measured').sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0))
   return {
     generatedAt: scan?.generatedAt,
+    measured: rows.length,
+    contracts: (scan?.rows ?? []).length,
     totalValueUsd: scan?.totalValueUsd,
     valueOneKeyFromFrozen: scan?.valueOneKeyFromFrozen,
     valueBehindWeakQuorum: scan?.valueBehindWeakQuorum,
@@ -96,11 +98,11 @@ export async function ask(req: Request, res: Response, api: string) {
     if (!target) {
       send('step', { name: 'scan', text: 'no single protocol named; reading the protocol scan' })
       const facts = { mode: 'scan', scan: scanSummary() }
-      send('step', { name: 'scan', text: `${facts.scan.rows.length} measured protocols, ${usd(facts.scan.totalValueUsd ?? 0)} read from chain state`, done: true })
+      send('step', { name: 'scan', text: `${facts.scan.contracts} contracts, ${facts.scan.measured} with a Safe measured, ${usd(facts.scan.totalValueUsd ?? 0)} read from chain state`, done: true })
       const text = await answerWithModel(question, facts, send)
       if (!text) {
         const top = facts.scan.rows.slice(0, 5).map((r) => `${r.protocol} ${r.role}: ${usd(r.valueUsd)}, declared ${r.declared}, honest quorum ${r.honestQuorum}, ${r.darkSigners} dark, margin ${r.marginToFrozen}${r.timeToHarmHours === 0 ? ', no timelock' : ''}`)
-        send('answer', `Across ${facts.scan.rows.length} measured protocol contracts, ${usd(facts.scan.totalValueUsd ?? 0)} was read from chain state. ${usd(facts.scan.valueOneKeyFromFrozen ?? 0)} sits behind a signer set with zero margin. The largest: ${top.join('; ')}. Name a protocol to have the agent pay for its full report.`)
+        send('answer', `Across ${facts.scan.contracts} protocol contracts, ${facts.scan.measured} of them with a Safe in the authority path, ${usd(facts.scan.totalValueUsd ?? 0)} was read from chain state. ${usd(facts.scan.valueOneKeyFromFrozen ?? 0)} sits behind a signer set with zero margin. The largest: ${top.join('; ')}. Name a protocol to have the agent pay for its full report.`)
       }
       send('done', { mode: 'scan' })
       return end()
