@@ -29,6 +29,16 @@ const CFG = {
   perTx: Number(process.env.X402_PER_TX ?? 0.0002),
   perChain: Number(process.env.X402_PER_CHAIN ?? 0.01),
   devBypass: process.env.X402_DEV_BYPASS === '1',
+  /** Optional second settlement asset: an HTS token with a custom fee schedule. */
+  hts: process.env.X402_HTS_ASSET
+    ? {
+        asset: process.env.X402_HTS_ASSET,
+        payTo: process.env.X402_HTS_PAY_TO ?? '',
+        decimals: Number(process.env.X402_HTS_DECIMALS ?? 2),
+        perHbar: Number(process.env.X402_HTS_PER_HBAR ?? 10),
+        symbol: process.env.X402_HTS_SYMBOL ?? 'RCC',
+      }
+    : null,
 }
 
 export const TINYBAR = 100_000_000
@@ -103,12 +113,28 @@ export async function paymentRequirements(q: Quote) {
   }
 }
 
+/** The same price in the HTS token, in its smallest units. */
+export function htsAmount(q: Quote): string | null {
+  if (!CFG.hts) return null
+  return String(Math.round(Number(q.hbar) * CFG.hts.perHbar * 10 ** CFG.hts.decimals))
+}
+
+/**
+ * Every way to pay, in preference order. HBAR first; then the HTS token, whose fee schedule the
+ * network assesses on settlement, so a token payment exercises HTS custom fees end to end.
+ */
+export async function acceptedRequirements(q: Quote) {
+  const hbar = await paymentRequirements(q)
+  if (!CFG.hts || !CFG.hts.payTo) return [hbar]
+  return [hbar, { ...hbar, asset: CFG.hts.asset, amount: htsAmount(q)!, payTo: CFG.hts.payTo }]
+}
+
 /** The 402 body an agent needs in order to pay without a human reading docs. */
 export async function paymentRequiredBody(q: Quote, resource: string) {
   return {
     x402Version: 2,
     error: 'payment required',
-    accepts: [await paymentRequirements(q)],
+    accepts: await acceptedRequirements(q),
     extra: {
       resource,
       description: 'Roll Call control surface report',
@@ -116,6 +142,7 @@ export async function paymentRequiredBody(q: Quote, resource: string) {
       breakdown: q.breakdown,
       units: q.units,
       hbar: q.hbar,
+      hts: CFG.hts ? { asset: CFG.hts.asset, symbol: CFG.hts.symbol, amount: htsAmount(q), decimals: CFG.hts.decimals, note: 'fee schedule assessed by the network on settlement' } : null,
       facilitator: CFG.facilitator,
     },
   }
@@ -158,7 +185,14 @@ export async function verifyAndSettle(header: string, q: Quote): Promise<Settlem
     return { error: 'X-PAYMENT header is not base64 encoded JSON' }
   }
 
-  const reqs = paymentPayload.accepted ?? (await paymentRequirements(q))
+  // The client says which of our offers it paid against. It must be one of ours, byte for byte on
+  // the fields that matter, or a client could pay a cheaper asset than it claims.
+  const offers = await acceptedRequirements(q)
+  const accepted = paymentPayload.accepted
+  const reqs = accepted
+    ? offers.find((o) => o.asset === accepted.asset && o.amount === accepted.amount && o.payTo === accepted.payTo)
+    : offers[0]
+  if (!reqs) return { error: 'accepted requirements do not match any offer for this resource' }
   const envelope = { x402Version: 2, paymentPayload, paymentRequirements: reqs }
 
   const verified = await post('/verify', envelope)
@@ -178,9 +212,9 @@ export async function verifyAndSettle(header: string, q: Quote): Promise<Settlem
     payer: verified.body.payer,
     transaction: tx,
     network: q.network,
-    amount: q.amount,
+    amount: reqs.amount,
     hbar: q.hbar,
-    asset: q.asset,
+    asset: reqs.asset,
     explorer: tx ? `https://hashscan.io/testnet/transaction/${tx}` : undefined,
     verifiedAt: Math.floor(Date.now() / 1000),
   }

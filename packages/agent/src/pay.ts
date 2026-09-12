@@ -19,8 +19,11 @@ import { createClientHederaSigner, PrivateKey } from '@x402/hedera'
 const C = { g: '\x1b[32m', y: '\x1b[33m', r: '\x1b[31m', d: '\x1b[2m', b: '\x1b[1m', c: '\x1b[36m', x: '\x1b[0m' }
 
 const API = process.env.ROLLCALL_API ?? 'http://localhost:8787'
-const target = process.argv[2] ?? '0x97cd81555F18d612C02FC4468118C48adD9f1245'
-const chain = process.argv[3] ?? 'ethereum'
+const args = process.argv.slice(2).filter((a) => !a.startsWith('--'))
+const target = args[0] ?? '0x97cd81555F18d612C02FC4468118C48adD9f1245'
+const chain = args[1] ?? 'ethereum'
+/** --asset=hbar (default) or --asset=<symbol|tokenId> to settle in an HTS token the API offers. */
+const wantAsset = (process.argv.find((a) => a.startsWith('--asset=')) ?? '--asset=hbar').split('=')[1].toLowerCase()
 const resource = `/report/${chain}/${target}?max=100&perms=2000`
 
 const accountId = process.env.HEDERA_ACCOUNT_ID
@@ -42,10 +45,19 @@ if (unpaid.status !== 402) {
   process.exit(1)
 }
 const challenge: any = await unpaid.json()
-const req = challenge.accepts[0]
+const offers: any[] = challenge.accepts
+const req =
+  wantAsset === 'hbar'
+    ? offers[0]
+    : offers.find((o) => o.asset.toLowerCase() === wantAsset || challenge.extra?.hts?.symbol?.toLowerCase() === wantAsset && o.asset === challenge.extra.hts.asset)
+if (!req) {
+  console.error(`${C.r}the API does not offer settlement in ${wantAsset}. Offered: ${offers.map((o) => o.asset).join(', ')}${C.x}`)
+  process.exit(1)
+}
 
-console.log(`${C.b}402 payment required${C.x}`)
-console.log(`  amount     ${req.amount} tinybar  ${C.d}(${challenge.extra?.hbar} HBAR)${C.x}`)
+console.log(`${C.b}402 payment required${C.x}  ${C.d}${offers.length} way(s) to pay: ${offers.map((o) => o.asset).join(', ')}${C.x}`)
+if (req.asset === '0.0.0') console.log(`  amount     ${req.amount} tinybar  ${C.d}(${challenge.extra?.hbar} HBAR)${C.x}`)
+else console.log(`  amount     ${req.amount} units of ${req.asset}  ${C.d}(${challenge.extra?.hts?.symbol ?? 'token'}, ${challenge.extra?.hts?.note ?? ''})${C.x}`)
 console.log(`  network    ${req.network}`)
 console.log(`  payTo      ${req.payTo}`)
 console.log(`  feePayer   ${req.extra?.feePayer}  ${C.d}(facilitator co-signs)${C.x}`)
@@ -88,7 +100,7 @@ if (paid.status !== 200) {
 
 const s = body.settlement
 console.log(`${C.g}${C.b}PAID AND SERVED${C.x} ${C.d}in ${((Date.now() - started) / 1000).toFixed(1)}s${C.x}`)
-console.log(`  settled    ${s.hbar} HBAR on ${s.network}  ${C.d}(${s.mode})${C.x}`)
+console.log(`  settled    ${s.asset === '0.0.0' ? `${s.hbar} HBAR` : `${s.amount} units of ${s.asset}`} on ${s.network}  ${C.d}(${s.mode})${C.x}`)
 if (s.payer) console.log(`  payer      ${s.payer}`)
 if (s.transaction) console.log(`  tx         ${C.c}${s.transaction}${C.x}`)
 if (s.explorer) console.log(`  explorer   ${C.d}${s.explorer}${C.x}`)

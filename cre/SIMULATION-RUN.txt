@@ -1,4 +1,4 @@
-CRE simulator, both workflows, 2026-09-12T10:04Z. macOS arm64, CRE CLI v1.32.0, SDK 1.19.1, Bun 1.4.2.
+CRE simulator, both workflows, 2026-09-12T10:37Z. macOS arm64, CRE CLI v1.32.0, SDK 1.19.1, Bun 1.4.2.
 
 $ cre workflow simulate ./liquidation-protection --target staging-settings -e .env --trigger-index 0 -g
 
@@ -9,17 +9,16 @@ Compiling workflow...
 ✓ Simulation limits enabled
   HTTP: req=120kb resp=250kb timeout=10s | ConfHTTP: req=125kb resp=500kb timeout=1m30s | Consensus obs=25kb | ChainWrite evm_report=50kb evm_gas=10000000 solana_report=265b solana_cu=300000 | WASM binary=100mb compressed=20mb
   Binary hash: 3d9f30f417058fadc406e5bb6400d26687ef205a707a640f85b7e904cced3a7c
-  Config hash: 2345e06e9c290870bea02e971180a422d3b868259b364f2121e875da1c26dd69
+  Config hash: b87115059d209d1ee3f98d732c28867018164cf5858a60d3eb626a7050653f65
   Workflow execution starting ...
 │ Trigger requested TEE Execution your trigger will run in one of the following Tees:                │
 │     - AWS Nitro in us-west-2                                                                       │
 │ The simulator is not a real TEE, and is meant to debug.                                            │
-2026-09-12T15:33:02Z [USER LOG] price=200000 hf=111 action=PROTECT deposit=61 repay=0
-2026-09-12T15:33:02Z [USER LOG] scenario not active, no transaction sent
-  Workflow execution finished successfully (durationMs=2887)
+2026-09-12T16:06:04Z [USER LOG] price=200000 hf=111 action=PROTECT deposit=61 repay=0
+2026-09-12T16:06:04Z [USER LOG] scenario not active, no transaction sent
+  Workflow execution finished successfully (durationMs=4110)
 ✓ Workflow Simulation Result:
-"{\"state\":\"not-active\",\"hf\":\"111\",\"price\":\"200000\",\"deposit\":\"61\",\"repay\":\"0\",\"txHashes\":[]}"
-2026-09-12T15:33:02Z [SIMULATION] Execution finished signal received
+2026-09-12T16:06:04Z [SIMULATION] Execution finished signal received
 
 HTTP capability calls made from inside the enclave, in order:
   eth_call  (JSON-RPC to ethereum-sepolia-rpc.publicnode.com)
@@ -32,12 +31,13 @@ HTTP capability calls made from inside the enclave, in order:
   eth_call  (JSON-RPC to ethereum-sepolia-rpc.publicnode.com)
   eth_blockNumber  (JSON-RPC to ethereum-sepolia-rpc.publicnode.com)
   eth_getLogs  (JSON-RPC to ethereum-sepolia-rpc.publicnode.com)
-  GET https://84f8-136-233-9-115.ngrok-free.app/signal/ethereum/0x4426f7eAA169aa9B84E665CA0f28B75EC24c1ca2  (the governance signal, bearer credit)
+  GET https://rollcall-pi.vercel.app/api/signal/ethereum/0x4426f7eAA169aa9B84E665CA0f28B75EC24c1ca2  -> 200  (the governance signal, bearer credit, served from the HCS attestation archive)
 
 $ cre workflow simulate ./control-surface-watch --target staging-settings -e .env --trigger-index 0 -g
 
   Binary hash: e9655da1aa4f370ed7e77efff90f084f32725d8ead757212f76e00367358dd21
 │ Trigger requested TEE Execution your trigger will run in one of the following Tees:                │
-  Workflow execution finished successfully (durationMs=620)
+  Workflow execution finished successfully (durationMs=1750)
 ✓ Workflow Simulation Result:
 "0 of 1 watched control surfaces degraded"
+  GET https://rollcall-pi.vercel.app/api/signal/ethereum/0xBb4716A4A47342aAd4f162ebc34AF8414360Cdc5  -> 200

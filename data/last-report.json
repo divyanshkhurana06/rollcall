@@ -6,7 +6,7 @@
     },
     "header": {
       "methodVersion": "1.0.0",
-      "generatedAt": "2026-09-09T16:49:58.235Z",
+      "generatedAt": "2026-09-12T10:43:13.523Z",
       "chainsSearched": [
         "ethereum"
       ],
@@ -19,7 +19,7 @@
         "safe-transaction-service",
         "rpc-archive-nonce",
         "rpc-state",
-        "the-graph-gateway (3 standardized deployments)"
+        "the-graph-gateway (27 standardized deployments)"
       ],
       "seed": 42,
       "permutations": {
@@ -54,10 +54,10 @@
           "timestamp": 1788503472,
           "source": "safe-confirmation"
         },
-        "daysSinceAnySignal": 5,
+        "daysSinceAnySignal": 8,
         "nonce": 85,
         "indeterminate": false,
-        "statement": "No observed signature or transaction in 5 days across 1 chains (Ethereum)."
+        "statement": "No observed signature or transaction in 8 days across 1 chains (Ethereum)."
       },
       {
         "signer": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
@@ -73,10 +73,10 @@
           "timestamp": 1788503214,
           "source": "safe-confirmation"
         },
-        "daysSinceAnySignal": 5,
+        "daysSinceAnySignal": 8,
         "nonce": 25,
         "indeterminate": false,
-        "statement": "No observed signature or transaction in 5 days across 1 chains (Ethereum)."
+        "statement": "No observed signature or transaction in 8 days across 1 chains (Ethereum)."
       },
       {
         "signer": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
@@ -85,17 +85,17 @@
         ],
         "lastOutgoingTx": {
           "chain": "ethereum",
-          "blockNumber": 25902215,
-          "timestamp": 1788503975
+          "blockNumber": 25955544,
+          "timestamp": 1789146371
         },
         "lastApproval": {
           "timestamp": 1788503035,
           "source": "safe-confirmation"
         },
-        "daysSinceAnySignal": 5,
-        "nonce": 30,
+        "daysSinceAnySignal": 0,
+        "nonce": 32,
         "indeterminate": false,
-        "statement": "No observed signature or transaction in 5 days across 1 chains (Ethereum)."
+        "statement": "No observed signature or transaction in 0 days across 1 chains (Ethereum)."
       }
     ],
     "reachability": {
@@ -112,46 +112,391 @@
     },
     "exposure": {
       "address": "0x97cd81555F18d612C02FC4468118C48adD9f1245",
-      "queriedProtocols": 3,
+      "queriedProtocols": 27,
       "protocolsWithExposure": 0,
       "openPositions": 0,
       "exposedProtocolTvlUsd": 0,
       "detail": [
         {
-          "key": "aave-v3",
+          "key": "cream-finance-bsc",
+          "label": "CREAM Finance",
+          "family": "lending",
+          "network": "bsc",
+          "deployment": "QmU7qbxpS7CjJdkSk9fbhE499yo5aevfNx7Nxv5gcmK1bC",
+          "indexedBlock": 121439778,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 47041485361.14854,
+          "protocolUsers": 15238,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "aave-v3-ethereum",
           "label": "Aave v3",
           "family": "lending",
+          "network": "ethereum",
+          "deployment": "QmcXE5QVcBcvcaJddPxd8mFs6W9xt7STmwfgguoiM6ddAd",
+          "indexedBlock": 25960805,
           "protocolType": "LENDING",
-          "protocolTvlUsd": 24636608326.23526,
-          "protocolUsers": 4488898,
+          "protocolTvlUsd": 24834229764.979668,
+          "protocolUsers": 4509274,
           "hasAccount": false,
           "openPositions": 0,
           "totalPositions": 0
         },
         {
-          "key": "aave-v2",
+          "key": "spark-lend-ethereum",
+          "label": "Spark Lend",
+          "family": "lending",
+          "network": "ethereum",
+          "deployment": "QmTVumjhubXWP8MeDx5g114MRX99E4Gie5mFqVurttF99X",
+          "indexedBlock": 25960805,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 7179948311.55894,
+          "protocolUsers": 222434,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "makerdao-ethereum",
+          "label": "MakerDAO",
+          "family": "lending",
+          "network": "ethereum",
+          "deployment": "QmYZq1vyFUgFYqyHJgFg2kYfRuYj2U4aXnxrKhZ7t2ApWy",
+          "indexedBlock": 25960805,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 5029335912.933275,
+          "protocolUsers": 23696,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "compound-v3-ethereum",
+          "label": "Compound III",
+          "family": "lending",
+          "network": "ethereum",
+          "deployment": "QmNrQoow7pjM3biRnnhzeCaDYhuEbDyjKCpFeNv2oGXnuK",
+          "indexedBlock": 25960805,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 1863952393.6410317,
+          "protocolUsers": 382626,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "compound-v3-base",
+          "label": "Compound III",
+          "family": "lending",
+          "network": "base",
+          "deployment": "QmNrQoow7pjM3biRnnhzeCaDYhuEbDyjKCpFeNv2oGXnuK",
+          "indexedBlock": 25960805,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 1863952393.6410317,
+          "protocolUsers": 382626,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "venus-protocol-bsc",
+          "label": "Venus",
+          "family": "lending",
+          "network": "bsc",
+          "deployment": "QmcZz5Lnn5p5tQ2jW1xjQaQbTXGMWX2GiK9yC3mtv6gZEZ",
+          "indexedBlock": 121439780,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 1698708303.235024,
+          "protocolUsers": 384790,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "aave-v3-arbitrum",
+          "label": "Aave v3",
+          "family": "lending",
+          "network": "arbitrum",
+          "deployment": "QmUGh2BNwmiLgd9r81pz7f1khe18fondJUSbsFHfKvhrvk",
+          "indexedBlock": 504368628,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 923350925.8495517,
+          "protocolUsers": 10384107,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "aave-v3-avalanche",
+          "label": "Aave v3",
+          "family": "lending",
+          "network": "avalanche",
+          "deployment": "QmV2gPmPoP9Mv4npRCm2hiKBTPUBVd3bUfKr8tVEUBe2sV",
+          "indexedBlock": 95092934,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 414282065.5676494,
+          "protocolUsers": 4252100,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "aave-v3-bsc",
+          "label": "Aave v3",
+          "family": "lending",
+          "network": "bsc",
+          "deployment": "QmYv5zijum9sccCohnZo99Hz7qmaRwvDwXAmz2mtwA4AMv",
+          "indexedBlock": 121439782,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 263945752.0566226,
+          "protocolUsers": 10113319,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "aave-v3-polygon",
+          "label": "Aave v3",
+          "family": "lending",
+          "network": "polygon",
+          "deployment": "QmZvndp7kSUaMZo3W21bLyggU8wpcYG5LXBbGvu21t4cvD",
+          "indexedBlock": 93669818,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 193942186.0623337,
+          "protocolUsers": 9313639,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "liquity-ethereum",
+          "label": "Liquity",
+          "family": "lending",
+          "network": "ethereum",
+          "deployment": "QmWEnV6povhA9Eq9Y315LsjJg7qwv169r1ZGw9o2uT24eZ",
+          "indexedBlock": 25960805,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 193125129.56426585,
+          "protocolUsers": 9692,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "iron-bank-ethereum",
+          "label": "Iron Bank",
+          "family": "lending",
+          "network": "ethereum",
+          "deployment": "QmYDS1MwYNjciXpJVtuuhb9KoPd6CCKLVYnhW3ofzm6yt1",
+          "indexedBlock": 25960804,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 126801242.88844617,
+          "protocolUsers": 2985,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "benqi-avalanche",
+          "label": "BENQI",
+          "family": "lending",
+          "network": "avalanche",
+          "deployment": "QmXQJEfS2o8kguj4L9jFtycE4en66omSDmAj56tr5fCrMc",
+          "indexedBlock": 95092934,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 124183012.04845165,
+          "protocolUsers": 127153,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "compound-v2-ethereum",
+          "label": "Compound v2",
+          "family": "lending",
+          "network": "ethereum",
+          "deployment": "QmZ2LVu8b1J9F92CDRnDKX4CcM21zSNjb9ogdRfMxVCFrg",
+          "indexedBlock": 25960805,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 117735200.2615873,
+          "protocolUsers": 434028,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "aave-v2-ethereum",
           "label": "Aave v2",
           "family": "lending",
+          "network": "ethereum",
+          "deployment": "QmdwBHGxokamYsLfMVk6fXfry3Ss9emEiTy6wptd1ecysG",
+          "indexedBlock": 25960805,
           "protocolType": "LENDING",
-          "protocolTvlUsd": 97451324.18787655,
-          "protocolUsers": 1412419,
+          "protocolTvlUsd": 97136308.94138332,
+          "protocolUsers": 1412477,
           "hasAccount": false,
           "openPositions": 0,
           "totalPositions": 0
         },
         {
-          "key": "uniswap-v3",
-          "label": "Uniswap V3",
-          "family": "dex-amm-extended",
-          "protocolType": "EXCHANGE",
-          "protocolTvlUsd": 1.3056340231110604e+26,
-          "protocolUsers": 82905691,
+          "key": "compound-v3-arbitrum",
+          "label": "Compound III",
+          "family": "lending",
+          "network": "arbitrum",
+          "deployment": "QmQURwBj3C9RRX3Th5MqTGehSSUcfnRgw3r8Sg2XWcjmjB",
+          "indexedBlock": 504368616,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 87214992.18913722,
+          "protocolUsers": 697918,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "moonwell-base",
+          "label": "Moonwell",
+          "family": "lending",
+          "network": "base",
+          "deployment": "QmeE6TgfRmK2iLAgCLBeXuxJQ2VXLFAeHVMTvmnECiFw7y",
+          "indexedBlock": 51210207,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 38785887.01610689,
+          "protocolUsers": 360772,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "sonne-finance-optimism",
+          "label": "Sonne Finance",
+          "family": "lending",
+          "network": "optimism",
+          "deployment": "QmRFsPe6pbJqgW5M4hntRePkXAQjcMbWqKtSWnj2L8xQsN",
+          "indexedBlock": 156805491,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 36847317.26528748,
+          "protocolUsers": 18041,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "aave-v2-polygon",
+          "label": "Aave v2",
+          "family": "lending",
+          "network": "polygon",
+          "deployment": "QmWDWDHD7pBaqfb78cghSKLHQfe8v1yjBojAvF4F46PAxh",
+          "indexedBlock": 93669817,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 19977089.465287868,
+          "protocolUsers": 37418921,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "aave-v2-avalanche",
+          "label": "Aave v2",
+          "family": "lending",
+          "network": "avalanche",
+          "deployment": "QmWm8B4mtHRzwM8v2zhfYQYSxDGHDKfgbSmkpSHdtSLW5Q",
+          "indexedBlock": 95092934,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 9774129.105363151,
+          "protocolUsers": 3698782,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "seamless-protocol-base",
+          "label": "Seamless Protocol",
+          "family": "lending",
+          "network": "base",
+          "deployment": "QmPSmTkJPSKLFn46YdgwMKV5K2c9a3pkWnzDCC4ccCLAXE",
+          "indexedBlock": 51210207,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 8784862.889823124,
+          "protocolUsers": 1698566,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "maple-finance-v2-ethereum",
+          "label": "Maple Finance 2.0",
+          "family": "lending",
+          "network": "ethereum",
+          "deployment": null,
+          "indexedBlock": null,
+          "protocolType": null,
+          "protocolTvlUsd": null,
+          "protocolUsers": null,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "dforce-ethereum",
+          "label": "dForce v2",
+          "family": "lending",
+          "network": "ethereum",
+          "deployment": "QmP6bTNozTjdcv9nXvRRzoCV1f3bMh4cuWBDfafARHrQqC",
+          "indexedBlock": 25960805,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 7206833.4618595,
+          "protocolUsers": 427,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "compound-v3-polygon",
+          "label": "Compound III",
+          "family": "lending",
+          "network": "polygon",
+          "deployment": "QmSpf6KX1qpKPkMdQWwRee3uyztNbsNn4NQv3Jaf6AC3z7",
+          "indexedBlock": 93669818,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 5923243.880116427,
+          "protocolUsers": 1011605,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "kinza-finance-bsc",
+          "label": "Kinza Finance",
+          "family": "lending",
+          "network": "bsc",
+          "deployment": "QmX4mcV1gjkeEvdHeSZw4V4wZ4rp5KbdKngdQyWgH1Qqva",
+          "indexedBlock": 121439783,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 4213599.595787203,
+          "protocolUsers": 1031504,
+          "hasAccount": false,
+          "openPositions": 0,
+          "totalPositions": 0
+        },
+        {
+          "key": "banker-joe-avalanche",
+          "label": "Banker Joe",
+          "family": "lending",
+          "network": "avalanche",
+          "deployment": "QmaPJBS9CXmzT1jFo84JPYgwdnWLTCDMBqa5xP5UGjBJrm",
+          "indexedBlock": 95092934,
+          "protocolType": "LENDING",
+          "protocolTvlUsd": 3172478.0511853658,
+          "protocolUsers": 36200,
           "hasAccount": false,
           "openPositions": 0,
           "totalPositions": 0
         }
       ],
-      "source": "The Graph gateway, 3 standardized deployments, one query shape"
+      "source": "The Graph gateway, 27 standardized deployments across 7 networks, one query shape, registry of 84 verified"
     },
     "participation": {
       "safe": "0x97cd81555F18d612C02FC4468118C48adD9f1245",
@@ -162,120 +507,25 @@
         "0xb9367abE3eF4bD498b8FBafC239f146d4eE98B98",
         "0x52da28d9289C3589239285700b92CdFcC5B74D99"
       ],
-      "rows": [
-        {
-          "safeTxHash": "0x92b87d14b34d0d3c71a1d961612372a48249a46303fb7c788beb452ab316967f",
-          "txHash": "0xbd00f75f60402793590e1e046ec038308352e87f7c6f5a06a5ebdf7cb22e92df",
-          "timestamp": 1788115487,
-          "executor": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
-          "approvers": [
-            {
-              "signer": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
-              "kind": "eip712",
-              "position": 0
-            },
-            {
-              "signer": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
-              "kind": "eip712",
-              "position": 1
-            },
-            {
-              "signer": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
-              "kind": "eip712",
-              "position": 2
-            }
-          ],
-          "unresolved": 0,
-          "serviceApprovers": [
-            "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
-            "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
-            "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98"
-          ],
-          "agreement": "exact"
-        },
-        {
-          "safeTxHash": "0x79a0d475e488227a032a2e4436b7000cf82fcbe075bdec3dbe252197f03a8d78",
-          "txHash": "0x5728587cf52789c2d62011e33786ff9aa6dbcf9e91c2f85e4a0da68593e19652",
-          "timestamp": 1788115991,
-          "executor": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
-          "approvers": [
-            {
-              "signer": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
-              "kind": "eip712",
-              "position": 0
-            },
-            {
-              "signer": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
-              "kind": "eip712",
-              "position": 1
-            },
-            {
-              "signer": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
-              "kind": "eip712",
-              "position": 2
-            }
-          ],
-          "unresolved": 0,
-          "serviceApprovers": [
-            "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
-            "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
-            "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E"
-          ],
-          "agreement": "exact"
-        },
-        {
-          "safeTxHash": "0x1b06f1b5a4478f82fa694f4f1913901f6886f936f6392b595cc970addb9bc3d0",
-          "txHash": "0xc707405fea483f184bf6ee90f7fffa65910f6e204ece488bf09a0b40cfa1a8b2",
-          "timestamp": 1788250907,
-          "executor": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
-          "approvers": [
-            {
-              "signer": "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
-              "kind": "eip712",
-              "position": 0
-            },
-            {
-              "signer": "0x52DA28d9289C3589239285700B92CdFCC5b74D99",
-              "kind": "eip712",
-              "position": 1
-            },
-            {
-              "signer": "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
-              "kind": "eip712",
-              "position": 2
-            }
-          ],
-          "unresolved": 0,
-          "serviceApprovers": [
-            "0x0a46C653cB7901eCfe10BeF820BAcba0A974463E",
-            "0xb9367abE3eF4Bd498B8fbAfc239f146D4ee98b98",
-            "0x52DA28d9289C3589239285700B92CdFCC5b74D99"
-          ],
-          "agreement": "exact"
-        }
-      ],
-      "nonces": {
-        "0x0a46c653cb7901ecfe10bef820bacba0a974463e": 85,
-        "0x52da28d9289c3589239285700b92cdfcc5b74d99": 30,
-        "0xb9367abe3ef4bd498b8fbafc239f146d4ee98b98": 25
-      },
+      "rows": [],
+      "nonces": {},
       "coverage": {
         "requestedBlocks": 350000,
-        "coveredBlocks": 349969,
+        "coveredBlocks": 349992,
         "failedRanges": 0,
         "complete": true
       },
       "summary": {
-        "transactionsRecovered": 3,
-        "signerSlotsRecovered": 9,
+        "transactionsRecovered": 0,
+        "signerSlotsRecovered": 0,
         "unresolvedWords": 0,
-        "crossChecked": 3,
-        "exactSetMatches": 3,
-        "agreementRate": 1,
+        "crossChecked": 0,
+        "exactSetMatches": 0,
+        "agreementRate": 0,
         "invisibleApprovers": [],
         "nonOwnerExecutors": []
       },
-      "note": "Approvers recovered from execTransaction calldata for 3 transaction(s) across 349,969 blocks searched. 3 cross-checked against the Safe Transaction Service, an independent derivation of the same fact."
+      "note": "Approvers recovered from execTransaction calldata for 0 transaction(s) across 349,992 blocks searched. No service records available for this window, so recovery stands alone."
     },
     "tested": {
       "independence": [
@@ -498,7 +748,7 @@
         "Liveness is bounded by the chains listed in the header. A signer active elsewhere reads as dark here.",
         "Module-executed transactions bypass owner signatures entirely and are out of scope for independence.",
         "Timing dependence cannot distinguish one operator from two people in the same meeting.",
-        "Exposure covers 3 standardized deployments only. A Safe with no account there may still hold value elsewhere.",
+        "Exposure covers 27 standardized deployments only. A Safe with no account there may still hold value elsewhere.",
         "Approver recovery covers a recent block window, not the Safe's whole history, because public RPCs cap log queries at 10k blocks.",
         "Confirmations recorded within 5s of execution are treated as undated: signatures gathered offchain and posted together would otherwise register as perfect timing coupling."
       ]
@@ -508,13 +758,13 @@
     "paid": true,
     "mode": "facilitator",
     "payer": "0.0.10391251",
-    "transaction": "0.0.7162784@1788972538.134755774",
+    "transaction": "0.0.7162784@1789209746.918819991",
     "network": "hedera:testnet",
-    "amount": "16200000",
+    "amount": "162",
     "hbar": "0.162000",
-    "asset": "0.0.0",
-    "explorer": "https://hashscan.io/testnet/transaction/0.0.7162784@1788972538.134755774",
-    "verifiedAt": 1788972545
+    "asset": "0.0.10498870",
+    "explorer": "https://hashscan.io/testnet/transaction/0.0.7162784@1789209746.918819991",
+    "verifiedAt": 1789209757
   },
   "quote": {
     "amount": "16200000",
@@ -531,7 +781,8 @@
       "pairs": 28,
       "txs": 100,
       "chains": 1,
-      "permutations": 2000
+      "permutations": 2000,
+      "count": 1
     }
   },
   "attestation": {
@@ -541,7 +792,7 @@
     "chain": "ethereum",
     "method": "1.0.0",
     "digest": "0x8e33025c470c93a244d2ba8694bca334",
-    "at": 1788972598,
+    "at": 1789209793,
     "metrics": {
       "threshold": 3,
       "owners": 3,
@@ -553,13 +804,20 @@
       "dependentPairs": 0,
       "txWindow": 32
     },
-    "bodyHash": "0xcccf9fe75a2c611ffb8434722178de7dd6b9e68ecca454efef4a12895034162b"
+    "bodyHash": "0xca82636af86464bfb075624b843c0d910e6b2acbfe43fd40698da4f4d63e415a"
   },
   "receipt": {
     "submitted": true,
     "topicId": "0.0.10392885",
-    "sequenceNumber": "13",
+    "sequenceNumber": "22",
     "consensusTimestamp": null,
     "explorer": "https://hashscan.io/testnet/topic/0.0.10392885"
+  },
+  "since": {
+    "target": "0x97cd81555F18d612C02FC4468118C48adD9f1245",
+    "latestAt": 1789209649,
+    "previousAt": 1788974108,
+    "span": 235541,
+    "changes": []
   }
 }
