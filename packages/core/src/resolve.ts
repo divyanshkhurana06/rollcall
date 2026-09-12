@@ -30,6 +30,8 @@ export interface Resolution {
   alsoOn: ChainKey[]
   message: string
   hint?: string
+  /** The authority chain that was walked, contract first, so a page can draw the path to the keys. */
+  holders?: { kind: string; address: string; hops: number; isSafe: boolean; threshold?: number; owners?: number; delaySeconds?: number }[]
 }
 
 const SEARCH: ChainKey[] = ['ethereum', 'base', 'arbitrum', 'optimism', 'polygon', 'gnosis']
@@ -67,13 +69,16 @@ export async function resolveTarget(chain: ChainKey, input: string): Promise<Res
       const holder = surface.holders.find((h) => h.isSafe)!
       return {
         ...base, kind: 'controlled-contract', safe: surface.safes[0],
+        holders: surface.holders.map((h) => ({ kind: h.kind, address: h.address, hops: h.hops, isSafe: h.isSafe, threshold: h.threshold, owners: h.owners, delaySeconds: h.delaySeconds })),
         via: surface.holders.map((h) => h.kind).join(' -> '),
         message: `A contract, not a Safe. It is controlled by a Safe, which is the thing worth measuring.`,
         hint: `Reached through ${holder.kind}${holder.role ? ` (${holder.role})` : ''}. Analysing that Safe instead.`,
       }
     }
     return {
-      ...base, kind: 'contract', safe: null, via: surface.holders.map((h) => h.kind).join(' -> ') || null,
+      ...base, kind: 'contract', safe: null,
+      holders: surface.holders.map((h) => ({ kind: h.kind, address: h.address, hops: h.hops, isSafe: h.isSafe, threshold: h.threshold, owners: h.owners, delaySeconds: h.delaySeconds })),
+      via: surface.holders.map((h) => h.kind).join(' -> ') || null,
       message: 'A contract, but no Safe in its authority path.',
       hint: surface.holders.length
         ? `Authority resolves through ${surface.holders.map((h) => h.kind).join(' -> ')}, so it ends at a timelock, a DAO or an EOA rather than a signer set.`

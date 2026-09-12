@@ -167,7 +167,7 @@ export async function ask(req: Request, res: Response, api: string) {
     send('facts', facts)
     const text = await answerWithModel(question, facts, send)
     if (!text) send('answer', [b.narrative?.headline, ...(b.narrative?.sentences ?? [])].filter(Boolean).join(' '))
-    send('done', { mode: 'report', safe: resolution.safe, report: r, narrative: b.narrative, since: b.since, settlement: b.settlement, receipt: b.receipt })
+    send('done', { mode: 'report', safe: resolution.safe, report: r, narrative: b.narrative, context: b.context, resolution, since: b.since, settlement: b.settlement, receipt: b.receipt })
     end()
   } catch (e: any) {
     send('error', e?.message ?? 'ask failed')

@@ -331,3 +331,20 @@ code { font-family: var(--mono); font-size: .92em; color: var(--ink-2); }
 .feed-row { display: grid; grid-template-columns: 90px 180px 1fr auto auto; gap: 12px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line); font-size: 12.5px; }
 .feed-row:last-child { border-bottom: 0; }
 .feed-delta { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+.path { display: flex; align-items: stretch; gap: 0; margin: 0 0 14px; overflow-x: auto; padding-bottom: 4px; }
+.path-node { position: relative; min-width: 150px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 14px; margin-right: 26px; }
+.path-node::after { content: '→'; position: absolute; right: -22px; top: 50%; transform: translateY(-50%); color: var(--ink-4); font-size: 16px; }
+.path-node:last-child { margin-right: 0; }
+.path-node:last-child::after { content: ''; }
+.path-node .k { color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; font-size: 10.5px; }
+.path-node .v { font-size: 16px; font-weight: 620; color: var(--ink); margin: 3px 0 2px; white-space: nowrap; }
+.path-node .s { color: var(--ink-3); font-size: 11.5px; white-space: nowrap; }
+.path-node.money .v { color: var(--warn); }
+.path-node.safe { border-color: #33343a; }
+.path-node.harm.crit .v { color: var(--crit); }
+.path-node.keys { min-width: 220px; }
+.signers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; max-width: 420px; }
+.signer-chip { display: inline-flex; gap: 8px; align-items: baseline; border: 1px solid var(--line); border-radius: var(--r); padding: 3px 8px; background: var(--panel-2); }
+.signer-chip .since { font-size: 11px; }
+.signer-chip.ok .since { color: var(--ok); } .signer-chip.warn .since { color: var(--warn); } .signer-chip.crit .since { color: var(--crit); } .signer-chip.unk .since { color: var(--ink-3); }

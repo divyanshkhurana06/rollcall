@@ -365,6 +365,7 @@ app.post('/demo/agent', async (req, res) => {
       receipt: b.receipt ?? null,
       since: b.since ?? null,
       narrative: b.narrative ?? null,
+      context: b.context ?? null,
       report: b.report ?? null,
       error: b.error ?? (result.status !== 200 ? `status ${result.status}` : undefined),
     })
@@ -463,9 +464,11 @@ app.get(
       const since = await attestationDelta(address).catch(() => null)
 
       const safeReport = JSON.parse(JSON.stringify(report, (_k, v) => (typeof v === 'bigint' ? String(v) : v)))
+      const context = protocolContextFor(address)
       res.json({
         report: safeReport,
-        narrative: narrative(safeReport, { protocol: protocolContextFor(address) }),
+        context,
+        narrative: narrative(safeReport, { protocol: context }),
         settlement: (req as any).settlement,
         quote: (req as any).quote,
         attestation,

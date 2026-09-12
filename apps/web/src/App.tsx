@@ -90,7 +90,7 @@ export default function App() {
       const body = await res.json()
       if (!res.ok) throw new Error(body.error ?? `agent failed (${res.status})`)
       setAgentRun(body)
-      if (body.report) { setData({ report: body.report, since: body.since, narrative: body.narrative, settlement: body.settlement, receipt: body.receipt }); setResolution({ kind: 'safe', safe: addr, message: 'paid for by the demo agent' }) }
+      if (body.report) { setData({ report: body.report, since: body.since, narrative: body.narrative, context: body.context, settlement: body.settlement, receipt: body.receipt }); setResolution((prev: any) => prev?.holders ? prev : { kind: 'safe', safe: addr, message: 'paid for by the demo agent' }) }
     } catch (e: any) { setErr(e.message ?? String(e)) }
     finally { setAgentBusy(false); setStep('') }
   }
@@ -120,7 +120,7 @@ export default function App() {
         {view === 'board' && <Board onInspect={(a) => { setAddr(a); run(a) }} health={health} />}
 
         {view === 'protocols' && <Changes />}
-        {view === 'ask' && <Ask onReport={(d: any) => { setData(d); setAddr(d.report?.target?.address ?? addr); setResolution({ kind: 'safe', safe: d.report?.target?.address, message: 'paid for by the agent' }); setView('report') }} />}
+        {view === 'ask' && <Ask onReport={(d: any) => { setData(d); setAddr(d.report?.target?.address ?? addr); setResolution(d.resolution ?? { kind: 'safe', safe: d.report?.target?.address, message: 'paid for by the agent' }); setView('report') }} />}
         {view === 'challenge' && <Challenge />}
         {view === 'report' && (
           <>
@@ -186,6 +186,7 @@ export default function App() {
 
             {r && (
               <div className="fade">
+                <AttackPath resolution={resolution} r={r} context={data?.context} />
                 <Headline r={r} since={data?.since} narrative={data?.narrative} />
                 <div className="cols">
                   <div>
@@ -984,6 +985,55 @@ function Changes() {
             <a className="rowbtn" href={`https://hashscan.io/testnet/topic/${feed.topicId}`} target="_blank" rel="noreferrer">seq {r.sequenceNumber}</a>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+
+const usdShort = (n: number) => (n >= 1e9 ? `$${(n / 1e9).toFixed(2)}B` : n >= 1e6 ? `$${(n / 1e6).toFixed(0)}M` : n >= 1e3 ? `$${(n / 1e3).toFixed(0)}K` : `$${n.toFixed(0)}`)
+
+/**
+ * The path from the money to the people. Contract, then every authority hop that was walked, then
+ * the Safe's signers with how long since each was last seen, then how fast a signature takes effect.
+ */
+function AttackPath({ resolution, r, context }: any) {
+  // The implementation is where the logic lives, not who controls it; it adds nothing to the path.
+  const holders: any[] = (resolution?.holders ?? []).filter((h: any) => h.kind !== 'implementation')
+  const R = r.reachability
+  const liveness: any[] = r.liveness ?? []
+  const delay = holders.find((h) => h.delaySeconds)?.delaySeconds ?? (context?.timeToHarmHours ? context.timeToHarmHours * 3600 : 0)
+  const kindLabel: Record<string, string> = { 'proxy-admin': 'proxy admin', owner: 'owner', role: 'role holder', timelock: 'timelock' }
+  const signers = liveness.slice(0, 8)
+  return (
+    <div className="path">
+      <div className="path-node money">
+        <div className="k">{context ? `${context.protocol} ${context.role}` : 'contract'}</div>
+        <div className="v">{context ? usdShort(context.valueUsd) : short(resolution?.input ?? r.target.address)}</div>
+        <div className="s">{context ? 'read from chain state' : 'the thing being controlled'}</div>
+      </div>
+      {holders.map((h) => (
+        <div key={h.address} className={`path-node ${h.isSafe ? 'safe' : ''}`}>
+          <div className="k">{kindLabel[h.kind] ?? h.kind}</div>
+          <div className="v">{h.isSafe ? `Safe ${h.threshold} of ${h.owners}` : short(h.address)}</div>
+          <div className="s">{h.isSafe ? `margin ${R.marginToFrozen}, ${R.darkSigners} dark` : h.delaySeconds ? `${Math.round(h.delaySeconds / 3600)}h delay` : 'a contract, not a party'}</div>
+        </div>
+      ))}
+      <div className="path-node keys">
+        <div className="k">the people</div>
+        <div className="signers">
+          {signers.map((l) => {
+            const d = l.daysSinceAnySignal
+            const cls = l.indeterminate ? 'unk' : d === null || d >= 365 ? 'crit' : d >= 180 ? 'warn' : 'ok'
+            return <div key={l.signer} className={`signer-chip ${cls}`} title={l.statement}><span className="addr">{short(l.signer)}</span><span className="since">{l.indeterminate ? 'unknown' : d === null ? 'never seen' : `${d}d`}</span></div>
+          })}
+          {liveness.length > 8 && <div className="note">+{liveness.length - 8} more</div>}
+        </div>
+      </div>
+      <div className={`path-node harm ${delay ? '' : 'crit'}`}>
+        <div className="k">time to harm</div>
+        <div className="v">{delay ? `${Math.round(delay / 3600)} h` : 'next block'}</div>
+        <div className="s">{delay ? 'timelock between signature and effect' : 'no timelock in the path'}</div>
       </div>
     </div>
   )
