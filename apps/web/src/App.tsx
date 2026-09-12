@@ -23,7 +23,7 @@ const SAMPLES = [
 ]
 
 export default function App() {
-  const [view, setView] = useState<'protocols' | 'board' | 'report'>('protocols')
+  const [view, setView] = useState<'protocols' | 'board' | 'report' | 'challenge'>('protocols')
   const [addr, setAddr] = useState(SAMPLES[0].addr)
   const [chain, setChain] = useState('ethereum')
   const [data, setData] = useState<any>(null)
@@ -34,6 +34,8 @@ export default function App() {
   const [err, setErr] = useState('')
   const [resolution, setResolution] = useState<any>(null)
   // A prepaid credit token, bought with `npm run agent:subscribe`. Kept in this browser only.
+  const [agentRun, setAgentRun] = useState<any>(null)
+  const [agentBusy, setAgentBusy] = useState(false)
   const [token, setToken] = useState<string>(() => {
     try { return localStorage.getItem('rollcall.token') ?? '' } catch { return '' }
   })
@@ -79,6 +81,20 @@ export default function App() {
     finally { setBusy(false); setStep('') }
   }
 
+  /** The service pays itself for a report with its own wallet, so a paid request can be watched here. */
+  async function runAgent(asset: 'hbar' | 'rcc') {
+    setAgentBusy(true); setErr(''); setAgentRun(null); setView('report')
+    try {
+      setStep(`the demo agent is discovering the price and paying in ${asset.toUpperCase()}`)
+      const res = await fetch(`${API}/demo/agent?chain=${chain}&target=${addr}&asset=${asset}`, { method: 'POST' })
+      const body = await res.json()
+      if (!res.ok) throw new Error(body.error ?? `agent failed (${res.status})`)
+      setAgentRun(body)
+      if (body.report) { setData({ report: body.report, since: body.since, settlement: body.settlement, receipt: body.receipt }); setResolution({ kind: 'safe', safe: addr, message: 'paid for by the demo agent' }) }
+    } catch (e: any) { setErr(e.message ?? String(e)) }
+    finally { setAgentBusy(false); setStep('') }
+  }
+
   const r = data?.report
 
   return (
@@ -92,6 +108,7 @@ export default function App() {
             <button className={view === 'protocols' ? 'tab on' : 'tab'} onClick={() => setView('protocols')}>Protocols</button>
             <button className={view === 'board' ? 'tab on' : 'tab'} onClick={() => setView('board')}>All Safes</button>
             <button className={view === 'report' ? 'tab on' : 'tab'} onClick={() => setView('report')}>Report</button>
+            <button className={view === 'challenge' ? 'tab on' : 'tab'} onClick={() => setView('challenge')}>Enclave</button>
           </div>
           <div className="mast-meta">v{r?.header.methodVersion ?? '1.0.0'}</div>
         </div>
@@ -101,6 +118,7 @@ export default function App() {
         {view === 'protocols' && <Protocols onInspect={(a) => { setAddr(a); run(a) }} />}
         {view === 'board' && <Board onInspect={(a) => { setAddr(a); run(a) }} health={health} />}
 
+        {view === 'challenge' && <Challenge />}
         {view === 'report' && (
           <>
             <div style={{ height: 26 }} />
@@ -117,6 +135,12 @@ export default function App() {
               {SAMPLES.map((s) => <button key={s.addr} className="chip" onClick={() => { setAddr(s.addr); run(s.addr) }}>{s.label}</button>)}
             </div>
             <div className="samples">
+              <span className="lbl">or let the service pay itself</span>
+              <button className="chip" disabled={agentBusy || busy} onClick={() => runAgent('hbar')}>pay in HBAR</button>
+              <button className="chip" disabled={agentBusy || busy} onClick={() => runAgent('rcc')}>pay in RCC, the HTS token</button>
+              <span className="note">a real x402 settlement through the facilitator, from this page</span>
+            </div>
+            <div className="samples">
               <span className="lbl">credit token</span>
               <input className="tokin" value={token} onChange={(e) => saveToken(e.target.value.trim())}
                      placeholder="rc_... from npm run agent:subscribe, or leave empty to see the x402 quote" spellCheck={false} />
@@ -124,7 +148,20 @@ export default function App() {
             </div>
 
             {err && <div className="panel err pad" style={{ marginBottom: 24 }}>{err}</div>}
-            {busy && <div className="loading"><span className="spin" /><span className="step">{step}</span></div>}
+            {(busy || agentBusy) && <div className="loading"><span className="spin" /><span className="step">{step}</span></div>}
+
+            {agentRun && !agentBusy && (
+              <div className="panel pad agent-run" style={{ marginBottom: 22 }}>
+                <div className="res-kind">paid request, end to end</div>
+                <div className="agent-grid">
+                  <div><span className="k">402 offered</span><span className="v">{agentRun.offers?.map((o: any) => o.asset === '0.0.0' ? `${(Number(o.amount) / 1e8).toFixed(4)} HBAR` : `${o.amount} units of ${o.asset}`).join('  or  ')}</span></div>
+                  <div><span className="k">agent paid</span><span className="v">{agentRun.accepted?.asset === '0.0.0' ? `${(Number(agentRun.accepted.amount) / 1e8).toFixed(4)} HBAR` : `${agentRun.accepted?.amount} units of ${agentRun.accepted?.asset}`} from {agentRun.agent}</span></div>
+                  <div><span className="k">settled</span><span className="v">{agentRun.settlement?.transaction ? <a href={agentRun.settlement.explorer} target="_blank" rel="noreferrer">{agentRun.settlement.transaction}</a> : agentRun.settlement?.mode}</span></div>
+                  <div><span className="k">attested</span><span className="v">{agentRun.receipt?.submitted ? <a href={agentRun.receipt.explorer} target="_blank" rel="noreferrer">HCS topic {agentRun.receipt.topicId}, sequence {agentRun.receipt.sequenceNumber}</a> : 'not submitted'}</span></div>
+                  <div><span className="k">served in</span><span className="v">{(agentRun.ms / 1000).toFixed(1)}s, {agentRun.headerBytes} byte payment header</span></div>
+                </div>
+              </div>
+            )}
 
             {resolution && !busy && (
               <div className={`panel pad resolution ${resolution.safe ? '' : 'dead-end'}`} style={{ marginBottom: 22 }}>
@@ -758,4 +795,78 @@ function heat(t: number) {
   const i = Math.floor(x), f = x - i
   const a = stops[i], b = stops[Math.min(i + 1, stops.length - 1)]
   return `rgb(${a.map((c, k) => Math.round(c + (b[k] - c) * f)).join(',')})`
+}
+
+
+/** The Chainlink liquidation challenge, live from Sepolia, and what the enclave would do about it. */
+function Challenge() {
+  const [c, setC] = useState<any>(null)
+  const [err, setErr] = useState('')
+  useEffect(() => {
+    fetch(`${API}/challenge`).then(async (r) => { const b = await r.json(); if (!r.ok) throw new Error(b.error); setC(b) }).catch((e) => setErr(e.message))
+  }, [])
+  if (err) return <div className="panel err pad" style={{ marginTop: 30 }}>{err}</div>
+  if (!c) return <div className="loading" style={{ marginTop: 30 }}><span className="spin" /><span className="step">reading ChallengeLending on Sepolia</span></div>
+  const p = c.position
+  const w = c.wouldDo
+  return (
+    <div className="fade" style={{ marginTop: 26 }}>
+      <div className="hero">
+        <div className="sec-title">A Confidential Workflow that defends a live lending position</div>
+        <div className="note" style={{ maxWidth: 820 }}>
+          Chainlink's liquidation protection challenge on Sepolia. The workflow runs inside an AWS Nitro enclave, reads this
+          position, and acts when the health factor reaches a private trigger. What no other protection has: it also unwinds if
+          the market's own control surface degrades, read from Roll Call. Everything below is live; the rules shown are the
+          example set, the enclave runs a private one.
+        </div>
+      </div>
+      <div className="boxes" style={{ marginTop: 14 }}>
+        <div className="box"><div className="k">position</div><div className="v">{p.collateral} vETH / {p.debt} vUSD</div><div className="s">hf {p.hf} at {c.vethPrice} vUSD per vETH</div></div>
+        <div className="box"><div className="k">emergency capital</div><div className="v">{p.wallet.veth} vETH</div><div className="s">{p.wallet.vusd} vUSD</div></div>
+        <div className="box"><div className="k">governance leg</div><div className="v">{c.governance ? `honest quorum ${c.governance.honestQuorum}` : 'unavailable'}</div><div className="s">{c.governance ? `${c.governance.darkSigners} dark, ${c.governance.canReachQuorum ? 'reachable' : 'unreachable'}, from HCS` : 'price only'}</div></div>
+        <div className="box"><div className="k">the enclave would</div><div className={`v ${w?.action === 'UNWIND' ? 'crit' : w?.action === 'PROTECT' ? 'warn' : 'ok'}`}>{w ? w.action : p.joined ? 'HOLD' : 'not joined'}</div><div className="s">{w ? `${w.deposit !== '0.00' ? `deposit ${w.deposit} vETH ` : ''}${w.repay !== '0.00' ? `repay ${w.repay} vUSD ` : ''}→ hf ${w.hfAfter}${w.sendsNow ? '' : ', sends once start() is called'}` : ''}</div></div>
+      </div>
+      <div className="note" style={{ margin: '10px 2px 0' }}>
+        contract <a className="addr" href={c.explorer} target="_blank" rel="noreferrer">{c.contract}</a> · registration {c.registrationOpen ? 'open' : 'closed'} · scenario {c.scenario} · {c.participants} participants · our position <a className="addr" href={p.explorer} target="_blank" rel="noreferrer">{short(p.address)}</a>
+      </div>
+
+      <div className="sec" style={{ marginTop: 26 }}>
+        <div className="sec-head"><div className="sec-title">The five published scenarios</div>
+          <div className="sec-sub">walked in the contract's own integers, under the worse ordering of price update and liquidation check</div></div>
+        <div className="panel">
+          <div className="board-head" style={{ gridTemplateColumns: '1.4fr 1.6fr 1fr 1fr .7fr .8fr .8fr .8fr' }}>
+            <div>scenario</div><div>price path</div><div>unprotected</div><div>protected</div><div>min hf</div><div>actions</div><div>vETH used</div><div>loan open</div>
+          </div>
+          {c.scenarios.map((s: any) => (
+            <div key={s.name} className="board-row" style={{ gridTemplateColumns: '1.4fr 1.6fr 1fr 1fr .7fr .8fr .8fr .8fr' }}>
+              <div className="pname">{s.name}</div>
+              <div className="addr">{s.prices.join(' → ')}</div>
+              <div className={s.unprotected.survived ? 'ok' : 'crit'}>{s.unprotected.survived ? 'survived' : `liquidated at ${s.unprotected.minHf}`}</div>
+              <div className={s.protected.survived ? 'ok' : 'crit'}>{s.protected.survived ? 'survived' : 'liquidated'}</div>
+              <div className="num">{s.protected.minHf}</div>
+              <div className="num">{s.protected.interventions}</div>
+              <div className="num">{s.protected.vethUsed}</div>
+              <div className="num">{s.protected.loanOpenPct}%</div>
+            </div>
+          ))}
+        </div>
+        <div className="note" style={{ margin: '8px 2px 0' }}>
+          Every published path liquidates the untouched position, including "safe volatility": at 1800.00 the health factor is 1.0029, which the contract truncates to 100 and liquidates.
+        </div>
+      </div>
+
+      <div className="sec" style={{ marginTop: 22 }}>
+        <div className="sec-head"><div className="sec-title">The trigger nobody else has</div>
+          <div className="sec-sub">same position, price flat at 2000.00 for four rounds</div></div>
+        <div className="boxes">
+          <div className="box"><div className="k">control surface healthy</div><div className="v ok">loan stays open</div><div className="s">{c.governanceDemo.healthy.interventions} action, {c.governanceDemo.healthy.loanOpenPct}% of the loan kept open</div></div>
+          <div className="box"><div className="k">control surface degraded</div><div className="v crit">position unwound</div><div className="s">{c.governanceDemo.degraded.vusdRepaid} vUSD repaid. Honest quorum 1, four signers dark, quorum unreachable. No price feed reports that.</div></div>
+        </div>
+      </div>
+
+      <div className="note" style={{ margin: '18px 2px 0' }}>
+        Proof it runs in the CRE engine: <code>cre/SIMULATION-RUN.txt</code>. Why it did not for three days: <code>cre/SIMULATION.md</code>. {c.evidence.tests} tests.
+      </div>
+    </div>
+  )
 }

@@ -292,7 +292,10 @@ npm run cover                                                   # issue a cover 
 ```
 
 **Hosted:** [rollcall-pi.vercel.app](https://rollcall-pi.vercel.app) serves the web and the API from
-one domain (`/api/...`, `/.well-known/x402`). `vercel.json` is the whole deployment; `Dockerfile` and
+one domain (`/api/...`, `/.well-known/x402`). The Report tab has a *pay in HBAR / pay in RCC* button:
+the service pays itself for a report with its own testnet wallet, through the facilitator, and the
+page shows the 402, the settlement transaction and the HCS receipt. The Enclave tab reads the live
+Chainlink challenge position on Sepolia and walks the five published scenarios. `vercel.json` is the whole deployment; `Dockerfile` and
 `render.yaml` are there for anyone who prefers a container. One honest caveat about the hosted copy:
 it is serverless, so credit tokens and renewal registrations live in the memory of the instance
 that created them (plus whatever `ROLLCALL_TOKENS` seeds). Reports, payments, attestations and the

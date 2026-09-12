@@ -12,6 +12,8 @@ import type { ChainKey } from '../../../packages/core/src/chain.js'
 import { gate, quote, x402Config } from './x402.js'
 import { describe, issue } from './subscriptions.js'
 import { register as registerRenewal, check as checkRenewal, list as listRenewals, pendingFor } from './renewals.js'
+import { payFor } from '../../../packages/agent/src/x402client.js'
+import { challengeSnapshot, jsonSafe } from './challenge.js'
 import { existsSync, readFileSync } from 'node:fs'
 
 /** ERC-8004 registrations, written by `npm run agent:register`. Absent until then. */
@@ -70,12 +72,14 @@ app.get('/.well-known/x402', (_req, res) => {
       { method: 'GET', path: '/signal/{chain}/{address}', paid: true, pay: ['X-PAYMENT', 'Authorization: Bearer <token>'], description: 'the governance signal from the cached report, or pending while it computes. Built for ten second budgets.' },
       { method: 'POST', path: '/subscribe?credits={n}', paid: true, pay: ['X-PAYMENT'], description: 'buy n report credits, get a bearer token. For runtimes that cannot sign, such as an enclave.' },
       { method: 'GET', path: '/subscription', paid: false, description: 'credits left on a bearer token' },
+      { method: 'POST', path: '/demo/agent?chain=&target=&asset=', paid: false, description: 'the service pays itself for a report with its own wallet, so a paid request can be watched from a browser. Rate limited.' },
       { method: 'POST', path: '/renewals', paid: false, description: 'register a Hedera Scheduled Transaction that pays for credits at expiry; credited when the mirror node shows it executed' },
       { method: 'GET', path: '/resolve/{chain}/{address}', paid: false, description: 'what was pasted: an EOA, a Safe, or a contract and the Safe above it' },
       { method: 'GET', path: '/protocols', paid: false, description: 'the protocol scan: who controls them and what they hold' },
       { method: 'GET', path: '/leaderboard', paid: false, description: 'declared vs effective quorum across a population of Safes' },
       { method: 'GET', path: '/archive?target={address}', paid: false, description: 'the HCS attestation history for a target' },
       { method: 'GET', path: '/method/calibration', paid: false, description: 'false positive rate and power of the independence test' },
+      { method: 'GET', path: '/challenge', paid: false, description: 'the Chainlink liquidation challenge: live Sepolia position, the five published scenarios, what the workflow would do now' },
       { method: 'GET', path: '/graph/registry', paid: false, description: 'the standardized subgraph registry the exposure query runs across, with the block each was verified at' },
     ],
     audit: topic ? { hcsTopic: topic, explorer: `https://hashscan.io/${process.env.HEDERA_NETWORK ?? 'testnet'}/topic/${topic}` } : null,
@@ -301,6 +305,69 @@ app.get(
     })
   },
 )
+
+/**
+ * The demo agent, behind a button.
+ *
+ * Runs the same x402 client `npm run agent` runs, server side, with the service's own testnet
+ * wallet, against this API's own paid endpoint. It exists so a judge can watch a real paid request
+ * from the web page without a terminal. One at a time, with a cooldown, because it spends testnet
+ * funds on every click.
+ */
+let demoBusy = false
+let demoLastAt = 0
+const DEMO_COOLDOWN_MS = 20_000
+app.post('/demo/agent', async (req, res) => {
+  const accountId = process.env.HEDERA_ACCOUNT_ID
+  const privateKey = process.env.HEDERA_PRIVATE_KEY
+  if (!accountId || !privateKey) return res.status(503).json({ error: 'demo agent not configured on this host' })
+  if (demoBusy) return res.status(429).json({ error: 'the demo agent is already paying for a report. Try again in a minute.' })
+  if (Date.now() - demoLastAt < DEMO_COOLDOWN_MS) return res.status(429).json({ error: `cooldown, try again in ${Math.ceil((DEMO_COOLDOWN_MS - (Date.now() - demoLastAt)) / 1000)}s` })
+  const chain = String(req.query.chain ?? 'ethereum')
+  const target = String(req.query.target ?? '0x97cd81555F18d612C02FC4468118C48adD9f1245')
+  const asset = String(req.query.asset ?? 'hbar')
+  if (!/^0x[0-9a-fA-F]{40}$/.test(target)) return res.status(400).json({ error: 'target must be a 0x address' })
+  // Call ourselves over HTTP, the way any agent would. Behind the Vercel rewrite that is /api.
+  const proto = (req.headers['x-forwarded-proto'] as string) ?? 'http'
+  const host = req.headers.host ?? `localhost:${process.env.PORT ?? 8787}`
+  const api = process.env.ROLLCALL_SELF_URL ?? (process.env.VERCEL ? `${proto}://${host}/api` : `http://${host}`)
+  demoBusy = true
+  demoLastAt = Date.now()
+  try {
+    const result = await payFor({ api, path: `/report/${chain}/${target}?max=100&perms=2000`, accountId, privateKey, asset })
+    const b = result.body ?? {}
+    res.status(result.status === 200 ? 200 : 502).json({
+      agent: accountId,
+      offers: result.offers,
+      accepted: result.accepted,
+      priced: result.extra?.breakdown ? { breakdown: result.extra.breakdown, units: result.extra.units, hbar: result.extra.hbar } : null,
+      headerBytes: result.headerBytes,
+      ms: result.ms,
+      settlement: b.settlement ?? null,
+      receipt: b.receipt ?? null,
+      since: b.since ?? null,
+      report: b.report ?? null,
+      error: b.error ?? (result.status !== 200 ? `status ${result.status}` : undefined),
+    })
+  } catch (e: any) {
+    res.status(502).json({ error: e?.message ?? 'demo agent failed' })
+  } finally {
+    demoBusy = false
+  }
+})
+
+/** Free: the Chainlink challenge, live. Position on Sepolia, the five scenarios, what the workflow would do. */
+let challengeCache: { at: number; body: any } | null = null
+app.get('/challenge', async (_req, res) => {
+  try {
+    if (challengeCache && Date.now() - challengeCache.at < 30_000) return res.json(challengeCache.body)
+    const body = jsonSafe(await challengeSnapshot())
+    challengeCache = { at: Date.now(), body }
+    res.json(body)
+  } catch (e: any) {
+    res.status(502).json({ error: e?.message ?? 'challenge read failed' })
+  }
+})
 
 /** Paid: the report. */
 app.get(
