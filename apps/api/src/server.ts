@@ -332,15 +332,13 @@ app.get(
  * from the web page without a terminal. One at a time, with a cooldown, because it spends testnet
  * funds on every click.
  */
-let demoBusy = false
-let demoLastAt = 0
-const DEMO_COOLDOWN_MS = 20_000
+let demoInFlight = 0
+const DEMO_MAX_CONCURRENT = 4
 app.post('/demo/agent', async (req, res) => {
   const accountId = process.env.HEDERA_ACCOUNT_ID
   const privateKey = process.env.HEDERA_PRIVATE_KEY
-  if (!accountId || !privateKey) return res.status(503).json({ error: 'demo agent not configured on this host' })
-  if (demoBusy) return res.status(429).json({ error: 'the demo agent is already paying for a report. Try again in a minute.' })
-  if (Date.now() - demoLastAt < DEMO_COOLDOWN_MS) return res.status(429).json({ error: `cooldown, try again in ${Math.ceil((DEMO_COOLDOWN_MS - (Date.now() - demoLastAt)) / 1000)}s` })
+  if (!accountId || !privateKey) return res.status(503).json({ error: 'the service wallet is not configured on this host' })
+  if (demoInFlight >= DEMO_MAX_CONCURRENT) return res.status(429).json({ error: 'the service wallet is paying for several reports right now. Try again in a few seconds.', retryAfter: 8 })
   const chain = String(req.query.chain ?? 'ethereum')
   const target = String(req.query.target ?? '0x97cd81555F18d612C02FC4468118C48adD9f1245')
   const asset = String(req.query.asset ?? 'hbar')
@@ -349,8 +347,7 @@ app.post('/demo/agent', async (req, res) => {
   const proto = (req.headers['x-forwarded-proto'] as string) ?? 'http'
   const host = req.headers.host ?? `localhost:${process.env.PORT ?? 8787}`
   const api = process.env.ROLLCALL_SELF_URL ?? (process.env.VERCEL ? `${proto}://${host}/api` : `http://${host}`)
-  demoBusy = true
-  demoLastAt = Date.now()
+  demoInFlight += 1
   try {
     const result = await payFor({ api, path: `/report/${chain}/${target}?max=100&perms=2000`, accountId, privateKey, asset })
     const b = result.body ?? {}
@@ -372,7 +369,7 @@ app.post('/demo/agent', async (req, res) => {
   } catch (e: any) {
     res.status(502).json({ error: e?.message ?? 'demo agent failed' })
   } finally {
-    demoBusy = false
+    demoInFlight -= 1
   }
 })
 

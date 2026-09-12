@@ -63,18 +63,27 @@ export default function App() {
       setStep('pricing the job by work')
       const q = await (await fetch(`${API}/quote/${chain}/${target}`)).json()
       if (q.error) throw new Error(q.error)
-      setStep('recovering approvers, testing independence, dating signers')
-      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
-      const res = await fetch(`${API}/report/${chain}/${target}?max=200&perms=4000`, { headers })
-      const body = await res.json()
-      if (res.status === 402) {
-        const price = body.extra?.hbar ? `${body.extra.hbar} HBAR on ${body.accepts?.[0]?.network}` : 'payment'
-        throw new Error(
-          token
-            ? `402: this token has no credits left. Buy more with npm run agent:subscribe and paste the new token below.`
-            : `402 payment required: ${price}. Pay per report from an agent (npm run agent), or buy credits (npm run agent:subscribe) and paste the token below.`,
-        )
+      // No credit token: the service pays for the report with its own wallet, over x402, and the
+      // receipt is shown as a detail. A visitor never meets a paywall; an agent with a token uses it.
+      if (!token) {
+        setStep(`the report costs ${q.quote?.hbar ?? '?'} HBAR by the work it takes; the service wallet is paying for it over x402`)
+        let res = await fetch(`${API}/demo/agent?chain=${chain}&target=${target}&asset=hbar`, { method: 'POST' })
+        if (res.status === 429) {
+          setStep('the service wallet is busy with other reports; retrying in a few seconds')
+          await new Promise((r) => setTimeout(r, 8000))
+          res = await fetch(`${API}/demo/agent?chain=${chain}&target=${target}&asset=hbar`, { method: 'POST' })
+        }
+        const body = await res.json()
+        if (!res.ok) throw new Error(body.error ?? `the service could not pay for this report (${res.status})`)
+        setAgentRun(body)
+        setData({ report: body.report, since: body.since, narrative: body.narrative, context: body.context, settlement: body.settlement, receipt: body.receipt })
+        return
       }
+
+      setStep('recovering approvers, testing independence, dating signers')
+      const res = await fetch(`${API}/report/${chain}/${target}?max=200&perms=4000`, { headers: { Authorization: `Bearer ${token}` } })
+      const body = await res.json()
+      if (res.status === 402) throw new Error('this credit token has no credits left. Clear it to let the service pay, or buy more with npm run agent:subscribe.')
       if (body.error) throw new Error(body.error)
       setData(body)
     } catch (e: any) { setErr(e.message ?? String(e)) }
@@ -138,15 +147,15 @@ export default function App() {
               {SAMPLES.map((s) => <button key={s.addr} className="chip" onClick={() => { setAddr(s.addr); run(s.addr) }}>{s.label}</button>)}
             </div>
             <div className="samples">
-              <span className="lbl">or let the service pay itself</span>
-              <button className="chip" disabled={agentBusy || busy} onClick={() => runAgent('hbar')}>pay in HBAR</button>
-              <button className="chip" disabled={agentBusy || busy} onClick={() => runAgent('rcc')}>pay in RCC, the HTS token</button>
-              <span className="note">a real x402 settlement through the facilitator, from this page</span>
+              <span className="lbl">settle in</span>
+              <button className="chip" disabled={agentBusy || busy} onClick={() => runAgent('hbar')}>HBAR</button>
+              <button className="chip" disabled={agentBusy || busy} onClick={() => runAgent('rcc')}>RCC, the HTS token with a fee schedule</button>
+              <span className="note">Analyse pays in HBAR from the service wallet; these let you pick the asset. Every settlement is real, through the facilitator.</span>
             </div>
             <div className="samples">
               <span className="lbl">credit token</span>
               <input className="tokin" value={token} onChange={(e) => saveToken(e.target.value.trim())}
-                     placeholder="rc_... from npm run agent:subscribe, or leave empty to see the x402 quote" spellCheck={false} />
+                     placeholder="optional: rc_... from npm run agent:subscribe, for agents that pay their own way" spellCheck={false} />
               {health?.x402 && <span className="note">reports settle on {health.x402.network}</span>}
             </div>
 

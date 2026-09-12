@@ -304,9 +304,11 @@ one domain (`/api/...`, `/.well-known/x402`). The Ask tab takes a question in pl
 Base bridge safe to use?") and an agent resolves the protocol to its keys, prices the report, reads
 exposure through The Graph, pays for the report over x402 on Hedera with its own wallet, and answers
 from the numbers, every step streamed as it happens. Every report also comes back in sentences, one
-per number, with its tier named. The Report tab has a *pay in HBAR / pay in RCC* button:
-the service pays itself for a report with its own testnet wallet, through the facilitator, and the
-page shows the 402, the settlement transaction and the HCS receipt. The Enclave tab reads the live
+per number, with its tier named. A visitor who presses Analyse never meets a paywall:
+the service pays for the report with its own testnet wallet, through the facilitator, and the page
+shows the 402 offers, the settlement transaction and the HCS receipt as a receipt, not an error. An
+agent that has bought credits pastes its token and pays its own way; the *settle in RCC* button shows
+the same flow in the HTS token. The Enclave tab reads the live
 Chainlink challenge position on Sepolia and walks the five published scenarios. `vercel.json` is the whole deployment; `Dockerfile` and
 `render.yaml` are there for anyone who prefers a container. One honest caveat about the hosted copy:
 it is serverless, so credit tokens and renewal registrations live in the memory of the instance
