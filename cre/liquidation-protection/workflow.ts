@@ -87,8 +87,12 @@ export const onCronTrigger = async (runtime: TeeRuntime<Config>): Promise<string
 		return json.result
 	}
 
+	// Inside the enclave the plain HTTP capability is already confidential, and it carries a ten
+	// second budget. So the governance leg reads a signal the API keeps warm in the background
+	// rather than asking it to compute a report on the spot: a quick answer, or "pending", which
+	// the engine treats as no signal.
 	const fetcher: Fetcher = (url, headers) => {
-		const response = http.sendRequest(runtime, { url, method: 'GET', headers, timeout: '90s' }).result()
+		const response = http.sendRequest(runtime, { url, method: 'GET', headers, timeout: '9s' }).result()
 		return { ok: ok(response), status: response.statusCode, body: text(response) }
 	}
 

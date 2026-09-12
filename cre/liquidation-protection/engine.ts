@@ -123,9 +123,16 @@ export async function feeParams(transport: Transport): Promise<{ maxFeePerGas: b
 	return { maxFeePerGas: base * 2n + tip, maxPriorityFeePerGas: tip }
 }
 
-/** Reads the honest quorum, dark signer count and reachability out of a Roll Call report. */
-export function readGovernance(body: string): Governance {
+/**
+ * Reads the honest quorum, dark signer count and reachability out of a Roll Call response.
+ * Accepts the warm signal (`/signal`) and a full report (`/report`). A pending signal is null.
+ */
+export function readGovernance(body: string): Governance | null {
 	const parsed = JSON.parse(body)
+	if (parsed.ready === false) return null
+	if (parsed.honestQuorum !== undefined) {
+		return { honestQuorum: Number(parsed.honestQuorum), darkSigners: Number(parsed.darkSigners), canReachQuorum: Boolean(parsed.canReachQuorum) }
+	}
 	const report = parsed.report ?? parsed
 	const curve: { effectiveQuorum: number }[] = report.inferred.quorumCurve
 	return {
@@ -189,9 +196,11 @@ export async function tick(input: TickInput): Promise<TickResult> {
 	try {
 		const headers: Record<string, string> = {}
 		if (input.apiKey) headers['Authorization'] = `Bearer ${input.apiKey}`
-		const res = await fetcher(`${config.rollcallApiUrl}/report/ethereum/${config.market}?max=100&perms=2000`, headers)
-		if (res.ok) governance = readGovernance(res.body)
-		else governanceError = `status ${res.status}`
+		const res = await fetcher(`${config.rollcallApiUrl}/signal/ethereum/${config.market}`, headers)
+		if (res.ok || res.status === 202) {
+			governance = readGovernance(res.body)
+			if (!governance) governanceError = 'pending'
+		} else governanceError = `status ${res.status}`
 	} catch (e: any) {
 		governanceError = e?.message ?? 'unreachable'
 	}

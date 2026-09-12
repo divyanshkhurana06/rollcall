@@ -55,6 +55,7 @@ app.get('/.well-known/x402', (_req, res) => {
     resources: [
       { method: 'GET', path: '/quote/{chain}/{address}', paid: false, description: 'exact price for a report, with the breakdown' },
       { method: 'GET', path: '/report/{chain}/{address}', paid: true, pay: ['X-PAYMENT (x402 exact, per request)', 'Authorization: Bearer <token> (prepaid credit)'], description: 'the report. Attested to HCS on delivery.' },
+      { method: 'GET', path: '/signal/{chain}/{address}', paid: true, pay: ['X-PAYMENT', 'Authorization: Bearer <token>'], description: 'the governance signal from the cached report, or pending while it computes. Built for ten second budgets.' },
       { method: 'POST', path: '/subscribe?credits={n}', paid: true, pay: ['X-PAYMENT'], description: 'buy n report credits, get a bearer token. For runtimes that cannot sign, such as an enclave.' },
       { method: 'GET', path: '/subscription', paid: false, description: 'credits left on a bearer token' },
       { method: 'GET', path: '/resolve/{chain}/{address}', paid: false, description: 'what was pasted: an EOA, a Safe, or a contract and the Safe above it' },
@@ -161,6 +162,64 @@ app.get('/subscription', (req, res) => {
   res.json(d)
 })
 
+/**
+ * Paid: the governance signal, kept warm.
+ *
+ * An enclave has a ten second HTTP budget and a report takes a minute to compute, so the signal is
+ * served from the cache and refreshed in the background. A caller that arrives before the first
+ * computation finishes gets `pending`, which the workflows treat as no signal rather than as a
+ * breach. Each fresh computation is attested to HCS exactly like a delivered report.
+ */
+const inflight = new Map<string, Promise<void>>()
+const SIGNAL_MAX = 100
+const SIGNAL_PERMS = 2000
+
+app.get(
+  '/signal/:chain/:address',
+  gate(() => ({ signers: 8, txs: SIGNAL_MAX, chains: 1, permutations: SIGNAL_PERMS })),
+  async (req, res) => {
+    const chain = req.params.chain as ChainKey
+    const address = req.params.address
+    const key = `${chain}:${address}:${chain}:${SIGNAL_MAX}:${SIGNAL_PERMS}`
+    const hit = cache.get(key)
+    const fresh = hit && Date.now() - hit.at < TTL ? hit : null
+
+    if (!fresh) {
+      if (!inflight.has(key)) {
+        const job = buildReport(address, { chain, livenessChains: [chain], maxTxs: SIGNAL_MAX, permutations: SIGNAL_PERMS })
+          .then(async (report) => {
+            cache.set(key, { at: Date.now(), report })
+            await submitAttestation(buildAttestation(report)).catch(() => null)
+          })
+          .catch(() => null)
+          .finally(() => inflight.delete(key))
+        inflight.set(key, job)
+      }
+      return res.status(202).json({ ready: false, pending: true, target: address, chain, settlement: (req as any).settlement })
+    }
+
+    const r = fresh.report
+    const curve = r.inferred.quorumCurve as { effectiveQuorum: number }[]
+    res.json({
+      ready: true,
+      target: r.target.address,
+      chain: r.target.chain,
+      computedAt: Math.floor(fresh.at / 1000),
+      digest: r.header.inputDigest,
+      threshold: r.observed.threshold,
+      owners: r.observed.owners.length,
+      honestQuorum: Math.min(...curve.map((c) => c.effectiveQuorum)),
+      effectiveQuorumMax: Math.max(...curve.map((c) => c.effectiveQuorum)),
+      darkSigners: r.reachability.darkSigners,
+      liveSigners: r.reachability.liveSigners,
+      canReachQuorum: r.reachability.canStillReachThreshold,
+      dependentPairs: r.tested.independence.filter((p: any) => p.pValue < 0.01 && p.excess > 0).length,
+      txWindow: r.header.txWindow.count,
+      settlement: (req as any).settlement,
+    })
+  },
+)
+
 /** Paid: the report. */
 app.get(
   '/report/:chain/:address',
@@ -212,6 +271,7 @@ app.listen(port, () => {
   console.log(`  GET /report/:chain/:address      x402 gated (${x402Config.network})`)
   console.log(`  GET /method/calibration          free - FPR + power`)
   console.log(`  GET /archive?target=0x...          free - HCS attestation history`)
+  console.log(`  GET /signal/:chain/:address      x402 gated - the governance signal, kept warm for enclaves`)
   console.log(`  POST /subscribe?credits=N        x402 gated - prepaid credits as a bearer token`)
   console.log(`  GET /.well-known/x402            free - discovery manifest`)
   if (x402Config.devBypass) console.log(`  ! X402_DEV_BYPASS=1 - payments not enforced`)

@@ -5,15 +5,17 @@ the consequence out: a breach count for one, a signed transaction for the other.
 
 ```bash
 cd cre
-cre workflow build ./control-surface-watch  --target staging -e .env   # compiles to WASM
-cre workflow build ./liquidation-protection --target staging -e .env   # compiles to WASM
+cre workflow simulate ./liquidation-protection --target staging-settings -e .env --trigger-index 0
+cre workflow simulate ./control-surface-watch  --target staging-settings -e .env --trigger-index 0
 
-cd liquidation-protection && bun test    # 37 pass
+cd liquidation-protection && bun test    # 39 pass
 cd control-surface-watch  && bun test    # 11 pass
 ```
 
-Tests run without auth or network. `cre workflow simulate` does not run on this machine for any
-workflow, including Chainlink's own scaffolds; the reproduction is in [`SIMULATION.md`](SIMULATION.md).
+Both run end to end in the CRE simulator; a full transcript is in [`SIMULATION-RUN.txt`](SIMULATION-RUN.txt).
+Tests run without auth or network. The simulator needs a current Bun: with Bun 1.2.15 every
+workflow, including Chainlink's own scaffolds, traps at engine creation. That cost three days and
+is written up with the isolation test in [`SIMULATION.md`](SIMULATION.md).
 
 ## control-surface-watch
 
@@ -154,6 +156,10 @@ valid on another.
 to the URL `npm run tunnel` printed at the time of writing; a tunnel URL changes every run, so put
 the current one (or the hosted API from `render.yaml`) there before deploying.
 
-To deploy the workflow itself: `cre workflow deploy ./liquidation-protection --target staging` once
-Confidential Workflows access is provisioned for the organisation. The build already succeeds; only
-the simulator is blocked.
+To deploy the workflow itself: `cre workflow deploy ./liquidation-protection --target staging-settings`
+once Confidential Workflows access is provisioned for the organisation.
+
+The governance leg reads `GET /signal/{chain}/{address}` rather than `/report`. The enclave's plain
+HTTP capability has a ten second budget and a report takes up to a minute, so the API serves the
+signal from its cache and refreshes it in the background; a `pending` answer is treated as no
+signal, never as a breach.

@@ -217,13 +217,19 @@ describe('reading a Roll Call report', () => {
 	})
 
 	it('takes the lowest honest quorum across the alpha grid', () => {
-		expect(readGovernance(body).honestQuorum).toBe(2)
+		expect(readGovernance(body)!.honestQuorum).toBe(2)
 	})
 
 	it('carries dark signers and reachability through', () => {
-		const g = readGovernance(body)
+		const g = readGovernance(body)!
 		expect(g.darkSigners).toBe(1)
 		expect(g.canReachQuorum).toBe(true)
+	})
+
+	it('reads the warm signal shape and treats pending as no signal', () => {
+		const warm = readGovernance(JSON.stringify({ ready: true, honestQuorum: 2, darkSigners: 1, canReachQuorum: true }))!
+		expect(warm.honestQuorum).toBe(2)
+		expect(readGovernance(JSON.stringify({ ready: false, pending: true }))).toBeNull()
 	})
 })
 
@@ -355,6 +361,15 @@ describe('engine', () => {
 			expect(r.governanceError).not.toBeNull()
 			expect(sent).toHaveLength(0)
 		}
+	})
+
+	it('treats a pending signal as no signal', async () => {
+		const pendingFetcher: Fetcher = () => ({ ok: false, status: 202, body: JSON.stringify({ ready: false, pending: true }) })
+		const { r, sent } = await run({ ...base, price: P(2300) }, { fetcher: pendingFetcher })
+		expect(r.state).toBe('held')
+		expect(r.governance).toBeNull()
+		expect(r.governanceError).toBe('pending')
+		expect(sent).toHaveLength(0)
 	})
 
 	it('respects the cooldown unless the position is critical', async () => {

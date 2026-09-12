@@ -53,8 +53,18 @@ type Assessment = {
  * Deterministic for a given input, because the enclave result is attested and verified by DON
  * consensus. Anything non-deterministic here would fail that verification.
  */
-export const readAssessment = (body: string): Assessment => {
+export const readAssessment = (body: string): Assessment | null => {
 	const parsed = JSON.parse(body)
+	// The warm signal. `pending` means the API is still computing: no assessment, not a breach.
+	if (parsed.ready === false) return null
+	if (parsed.honestQuorum !== undefined) {
+		return {
+			digest: String(parsed.digest),
+			honestQuorum: Number(parsed.honestQuorum),
+			darkSigners: Number(parsed.darkSigners),
+			canReachQuorum: Boolean(parsed.canReachQuorum),
+		}
+	}
 	const report = parsed.report ?? parsed
 	const curve: { effectiveQuorum: number }[] = report.inferred.quorumCurve
 	return {
@@ -85,23 +95,31 @@ export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
 	const http = new cre.capabilities.HTTPClient()
 	const digests: string[] = []
 	let breaches = 0
+	let pending = 0
 
 	for (const entry of watchlist) {
 		// Executed from inside the enclave, so both the request (which names the protocol) and the
 		// response (which carries the assessment) stay confidential from node operators.
+		// The signal is served warm and refreshed in the background, because the enclave's HTTP
+		// budget is ten seconds and a report takes a minute. The credential is a prepaid credit token.
 		const response = http
 			.sendRequest(runtime, {
-				url: `${config.rollcallApiUrl}/report/${entry.chain}/${entry.safe}?max=150`,
+				url: `${config.rollcallApiUrl}/signal/${entry.chain}/${entry.safe}`,
 				method: 'GET',
-				multiHeaders: { 'X-PAYMENT': { values: [apiKey] } },
+				headers: { Authorization: `Bearer ${apiKey}` },
+				timeout: '9s',
 			})
 			.result()
 
-		if (!ok(response)) {
+		if (!ok(response) && response.statusCode !== 202) {
 			throw new Error(`Roll Call request failed with status: ${response.statusCode}`)
 		}
 
 		const assessment = readAssessment(text(response))
+		if (!assessment) {
+			pending += 1
+			continue
+		}
 		digests.push(assessment.digest)
 		if (isBreached(assessment, entry)) breaches += 1
 	}
@@ -125,7 +143,7 @@ export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
 		})
 		.result()
 
-	return `${breaches} of ${watchlist.length} watched control surfaces degraded`
+	return `${breaches} of ${watchlist.length} watched control surfaces degraded${pending ? `, ${pending} pending` : ''}`
 }
 
 export function initWorkflow(config: Config) {

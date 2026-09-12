@@ -282,6 +282,7 @@ npm run agent                                                   # pay for a repo
 npm run agent:subscribe -- 10                                   # buy 10 report credits, get a bearer token
 npm run protect                                                 # liquidation protection, the five published scenarios
 npm run challenge -- status                                     # the live challenge position on Sepolia
+cd cre && cre workflow simulate ./liquidation-protection --target staging-settings -e .env --trigger-index 0
 npm run cover                                                   # issue a cover note through ATS
 npm run tunnel                                                  # a public https URL for the API, no account needed
 ```
@@ -405,11 +406,12 @@ in-memory model of the contract that decodes every signed transaction. The signi
 the cooldown, the governance bounds and the Roll Call credential are CRE secrets; the credential is
 a prepaid credit token so the enclave never holds a Hedera key.
 
-Both workflows compile to WASM through the CRE CLI. Local simulation fails at engine creation, and it
-fails the same way on Chainlink's own unmodified scaffolds including a plain non-TEE one, so it is not
-this project. The full reproduction is in [`cre/SIMULATION.md`](cre/SIMULATION.md). Everything else
-about the workflow is exercised without the simulator: 37 tests, the scenario harness, and the live
-Sepolia position through `npm run challenge`.
+Both workflows run end to end in the CRE simulator against the live Sepolia contract; the transcript
+is in [`cre/SIMULATION-RUN.txt`](cre/SIMULATION-RUN.txt). For three days they did not, and every
+workflow including Chainlink's own scaffolds trapped at engine creation. The cause was the Bun
+version the SDK bundles with, isolated by reinstalling the old one and reproducing the trap on
+demand: [`cre/SIMULATION.md`](cre/SIMULATION.md). The enclave reads a governance signal the API keeps
+warm (`/signal`), because its HTTP budget is ten seconds and a report takes a minute.
 
 ### Chainlink - watchlist detail
 
