@@ -11,13 +11,15 @@ transaction, so on every block explorer both look dead. Every number I just said
 chain state."
 
 **0:30** "Every protocol has a pause button. Roll Call tells you whether anyone is still holding it."
-Paste the portal address. It resolves the Safe. Show the honest quorum, the dark signers, the margin.
+Ask tab. Type "is the Base bridge safe to use?" and let it run: resolve, price, The Graph, x402 on
+Hedera, answer. Then "open the full report": the path from the $1.86B to the two people, the
+sentences, the grid.
 
 **1:15** "This is not a score. Every number is tiered: observed, tested, or inferred. The independence
 test is calibrated and the calibration is public." Point at the tier labels once. Move on.
 
-**1:45** "It is a service agents pay for." Run the agent. 402, sign, settle on Hedera, report, HCS
-attestation. Ten seconds of terminal.
+**1:45** "It is a service agents pay for, in HBAR or in a token with a fee schedule the network
+enforces." Report tab, *pay in RCC*. The 402, the settlement, the HCS receipt, on the page.
 
 **2:15** "And it acts." The CRE simulator run: an enclave reads the live Sepolia position, decides
 to top up 0.61 vETH, and would have unwound the loan if the market's own governance degraded. "No
