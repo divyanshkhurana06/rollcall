@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import { consume, redact } from './subscriptions.js'
+import { check as checkRenewal, pendingFor } from './renewals.js'
 
 /**
  * x402 v2 payment gate, settled on Hedera testnet through the Blocky402 facilitator.
@@ -234,7 +235,13 @@ export function gate(
     // not an error: it falls through to the 402, and the client can pay per request instead.
     const auth = req.header('Authorization')
     if (allowToken && auth?.startsWith('Bearer ')) {
-      const sub = consume(auth.slice(7).trim())
+      const token = auth.slice(7).trim()
+      let sub = consume(token)
+      if (!sub) {
+        // No credits left: a scheduled renewal may have executed since we last looked.
+        for (const r of pendingFor(token)) await checkRenewal(r.scheduleId).catch(() => null)
+        sub = consume(token)
+      }
       if (sub) {
         ;(req as any).settlement = {
           paid: true, mode: 'subscription', network: q.network,

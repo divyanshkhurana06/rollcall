@@ -17,7 +17,7 @@ import { buildReport } from '../../core/src/report.js'
 import { fetchSafe } from '../../core/src/extract/safeapi.js'
 import { calibrate } from '../../core/src/validate.js'
 import { sourceNote, subgraphConfigured } from '../../core/src/graph.js'
-import { graphConfigured as gatewayConfigured, STANDARDIZED } from '../../core/src/exposure.js'
+import { graphConfigured as gatewayConfigured, STANDARDIZED, REGISTRY, accountExposure } from '../../core/src/exposure.js'
 import type { ChainKey } from '../../core/src/chain.js'
 
 const CHAINS = ['ethereum', 'base', 'arbitrum', 'optimism', 'polygon', 'gnosis']
@@ -81,6 +81,28 @@ const TOOLS = [
       'Call this before trusting any independence result.',
     inputSchema: { type: 'object', properties: {} },
   },
+  {
+    name: 'protocol_exposure',
+    description:
+      'What money sits behind an address across DeFi, from The Graph: one standardized query sent to the ' +
+      'largest Messari lending deployments, each answer stamped with the deployment hash and the block it had ' +
+      'indexed. Use it to decide whether a control surface matters before spending a report on it.',
+    inputSchema: { type: 'object', properties: { address: { type: 'string', description: '0x address, any EVM chain' } }, required: ['address'] },
+  },
+  {
+    name: 'standardized_registry',
+    description:
+      'The registry of Messari standardized subgraph deployments Roll Call has verified on the decentralized ' +
+      'network: schema family, network, subgraph id, and the block each answered at. Filter by family or network. ' +
+      'This is how one query spans 84 deployments across 12 networks without per-protocol code.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        family: { type: 'string', enum: ['lending', 'dex-amm'], description: 'Schema family' },
+        network: { type: 'string', description: 'e.g. ethereum, arbitrum, base' },
+      },
+    },
+  },
 ] as const
 
 const server = new Server({ name: 'rollcall', version: '1.0.0' }, { capabilities: { tools: {} } })
@@ -94,6 +116,28 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
 
   try {
     switch (req.params.name) {
+      case 'protocol_exposure': {
+        const address = String((args as any)?.address ?? '')
+        if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return text({ error: 'address must be a 0x-prefixed 20-byte hex address' })
+        const exposure = await accountExposure(address)
+        if (!exposure) return text({ error: 'The Graph gateway is not configured (GRAPH_API_KEY)' })
+        return text({
+          ...exposure,
+          provenance: exposure.detail.map((d) => ({ key: d.key, network: d.network, deployment: d.deployment, indexedBlock: d.indexedBlock })),
+        })
+      }
+      case 'standardized_registry': {
+        const family = (args as any)?.family as string | undefined
+        const network = (args as any)?.network as string | undefined
+        const deployments = REGISTRY.deployments.filter((d) => (!family || d.family === family) && (!network || d.network === network))
+        return text({
+          verifiedAt: REGISTRY.verifiedAt,
+          total: REGISTRY.deployments.length,
+          matching: deployments.length,
+          queriedPerReport: STANDARDIZED.length,
+          deployments: deployments.map((d) => ({ key: d.key, family: d.family, network: d.network, subgraphId: d.subgraphId, schemaVersion: d.schemaVersion, verifiedBlock: d.verifiedBlock, tvlUsd: d.tvlUsd })),
+        })
+      }
       case 'method_calibration':
         return out({
           tier: 'method',

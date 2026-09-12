@@ -279,16 +279,21 @@ npm run api                                                     # x402-gated API
 npm run web                                                     # interface on :5173
 npm run mcp                                                     # MCP server on stdio
 npm run agent                                                   # pay for a report over x402, for real
+npm run agent -- 0x97cd... ethereum --asset=rcc                 # the same, settled in the HTS token
 npm run agent:subscribe -- 10                                   # buy 10 report credits, get a bearer token
+npm run agent:schedule -- 10 3600                               # credits paid by a Scheduled Transaction an hour from now
+npm run agent:register -- https://rollcall-pi.vercel.app        # ERC-8004 identity on Hedera testnet and Sepolia
+npm run setup:hts                                               # the RCC token with its fee schedule
 npm run protect                                                 # liquidation protection, the five published scenarios
 npm run challenge -- status                                     # the live challenge position on Sepolia
+npm run challenge -- guard --send                               # the enclave engine on a loop from this machine
 cd cre && cre workflow simulate ./liquidation-protection --target staging-settings -e .env --trigger-index 0
 npm run cover                                                   # issue a cover note through ATS
-npm run tunnel                                                  # a public https URL for the API, no account needed
 ```
 
-To host the API: `Dockerfile` and `render.yaml` are in the root. Point a static build of `apps/web`
-at it with `VITE_API_BASE=https://your-api`.
+**Hosted:** [rollcall-pi.vercel.app](https://rollcall-pi.vercel.app) serves the web and the API from
+one domain (`/api/...`, `/.well-known/x402`). `vercel.json` is the whole deployment; `Dockerfile` and
+`render.yaml` are there for anyone who prefers a container.
 
 No API keys are required to run the core. Everything above works against public endpoints.
 
@@ -331,10 +336,20 @@ built around it.
 `effective_quorum` and `method_calibration`. Every tool returns its **tier and its caveats alongside
 the numbers**, so a model cannot present an inference as a fact.
 
-### Hedera - `apps/api/src/x402.ts`, `apps/api/src/hcs.ts`
+**The registry.** `data/standardized-registry.json` is every Messari standardized deployment on the
+decentralized network that answered the schema-level query when
+`packages/core/test/probe-standardized.ts` last ran: **84 verified deployments across 12 networks**,
+51 lending and 33 DEX, each with the block it had indexed at verification. A report queries the 27
+largest lending deployments with one query string, and every answer carries its provenance
+(`deployment`, `indexedBlock`) so an agent can tell fresh data from stale. Adding a protocol is a
+data change; the query code never moves. `GET /graph/registry` serves it.
 
-**x402.** Metered by work, not per request. Independence testing is quadratic in signers, so price
-follows the actual job:
+### Hedera - `apps/api/src/x402.ts`, `apps/api/src/hcs.ts`, `apps/api/src/renewals.ts`
+
+Live at [rollcall-pi.vercel.app/api](https://rollcall-pi.vercel.app/api/health), settled through the
+Blocky402 facilitator on `hedera:testnet`.
+
+**x402, metered by work.** Independence testing is quadratic in signers, so price follows the job:
 
 ```
 price = base + perPair·C(n,2) + perTx·min(txs, cap) + perChain·chains
@@ -343,9 +358,11 @@ price = base + perPair·C(n,2) + perTx·min(txs, cap) + perChain·chains
 A 3-of-5 with 40 transactions and a 12-of-20 with 900 are not the same product. `GET /quote` is free
 and returns the full breakdown, so an agent can decide before paying.
 
-**HCS.** Anyone can recompute today's answer; nobody else has last year's. Each report emits a
-timestamped attestation, so *"on 10 September two of these signers had already been dark for 300
-days"* is provable after an incident rather than asserted. The archive is the asset.
+**Two ways to settle.** Every 402 carries two offers: HBAR, and **RCC**, an HTS token
+(`0.0.10498870`) whose fee schedule the network assesses on every transfer: a 2% fractional fee to
+a collector account, on top, paid by the sender. The client picks; the API checks the accepted offer
+against its own byte for byte before it verifies, so nobody pays the cheaper asset and claims the
+other. `npm run agent -- <safe> ethereum --asset=rcc` is a real token settlement end to end.
 
 **Prepaid credits.** `POST /subscribe?credits=N` is x402-gated and returns a bearer token. It exists
 for the runtimes that cannot sign a Hedera transfer per request: the Chainlink workflows run inside
@@ -353,10 +370,23 @@ an enclave with no Hedera key, and a cron should not carry one. The key that pay
 buyer; the token is what the enclave holds. An unknown or exhausted token is not an error, it falls
 through to the 402 so the caller can pay per request instead.
 
-**Discovery.** `GET /.well-known/x402` lists every resource, how it is priced, which network settles
-it, where the audit trail lives and how to buy credits, so an agent can find and pay for the service
-without a human reading docs. The MCP server exposes the same five tools to agents that already
-speak MCP.
+**Renewals by Scheduled Transaction.** `npm run agent:schedule -- 10 3600` signs next period's
+payment now and lets the network execute it at expiry. The API registers the schedule
+(`POST /renewals`), watches it on the mirror node, checks the executed transfer against the price,
+and tops the token up exactly once. The money moves on the network's clock, not on either party's.
+
+**HCS: the archive is the cache.** Every delivered report emits a timestamped attestation to topic
+`0.0.10392885`. That makes *"on 10 September two of these signers had already been dark for 300
+days"* provable after an incident rather than asserted. It also makes the archive the shared cache
+behind `GET /signal`, which serves an enclave the latest attestation in a few hundred milliseconds
+and refreshes it in the background, so a workflow with a ten second budget never waits on a minute
+of computation. `since` on every report is the archive's first derivative: what moved since the
+previous attestation of the same target.
+
+**Discovery and identity.** `GET /.well-known/x402` lists every resource, how it is priced, which
+network settles it, where the audit trail lives and how to buy credits. Roll Call is registered as an
+ERC-8004 agent on Hedera testnet (agent `114`) and on Sepolia (agent `10244`, indexed by the Agent0
+subgraphs so the identity reads back through The Graph); both registrations are in the manifest.
 
 **Harness.** Building this against testnet surfaced four setups that pass `doctor` and then fail
 forty minutes into a run: an EVM address in the account id variable, a key on the wrong curve, an

@@ -76,3 +76,13 @@ export function describe(token: string) {
 }
 
 export const redact = (token: string) => `${token.slice(0, 7)}...${token.slice(-4)}`
+
+/** Adds credits to an existing token. Used when a scheduled renewal executes. */
+export function topUp(token: string, credits: number): Subscription | null {
+  const s = store.get(token)
+  if (!s) return null
+  s.credits += credits
+  s.issued += credits
+  persist()
+  return s
+}

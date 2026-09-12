@@ -17,3 +17,4 @@ data/subscriptions.json
 api/_server.mjs
 apps/web/dist/
 .vercel
+data/renewals.json

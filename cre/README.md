@@ -136,7 +136,13 @@ npm run challenge -- keygen     # a dedicated Sepolia key. Fund the printed addr
 npm run challenge -- status     # chain state, our position, and exactly what the workflow would do now
 npm run challenge -- join       # join(), then approve vETH and vUSD once, so the enclave never has to
 npm run challenge -- tick       # one cron iteration of the enclave code path, dry run. Add --send to transact.
+npm run challenge -- guard --send   # the same tick on a loop from this machine, every 30s
 ```
+
+`guard` is the same engine minus the enclave. It exists to exercise the live execution path before
+the organisers' run, and as a disclosed fallback: if Confidential Workflows deploy access is not
+provisioned before the scenario window, the position is defended by this loop from a laptop, with
+the identical decision code, and the submission says so.
 
 `deposit` and `repay` revert until the organisers call `start()`, so before that `status` shows the
 plan and sends nothing.
@@ -152,9 +158,8 @@ enough for the scenario window: `npm run agent:subscribe -- 100` costs 17.2 test
 live in `data/subscriptions.json` on the API host, so a token bought against one deployment is not
 valid on another.
 
-`rollcallApiUrl` in both `config.staging.json` files must be reachable from the enclave. It is set
-to the URL `npm run tunnel` printed at the time of writing; a tunnel URL changes every run, so put
-the current one (or the hosted API from `render.yaml`) there before deploying.
+`rollcallApiUrl` in both `config.staging.json` files points at the hosted API,
+`https://rollcall-pi.vercel.app/api`, which is what the simulator runs above hit.
 
 To deploy the workflow itself: `cre workflow deploy ./liquidation-protection --target staging-settings`
 once Confidential Workflows access is provisioned for the organisation.

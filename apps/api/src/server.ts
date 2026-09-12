@@ -11,6 +11,7 @@ import { REGISTRY, STANDARDIZED, EXPOSURE_QUERY } from '../../../packages/core/s
 import type { ChainKey } from '../../../packages/core/src/chain.js'
 import { gate, quote, x402Config } from './x402.js'
 import { describe, issue } from './subscriptions.js'
+import { register as registerRenewal, check as checkRenewal, list as listRenewals, pendingFor } from './renewals.js'
 import { existsSync, readFileSync } from 'node:fs'
 
 /** ERC-8004 registrations, written by `npm run agent:register`. Absent until then. */
@@ -69,6 +70,7 @@ app.get('/.well-known/x402', (_req, res) => {
       { method: 'GET', path: '/signal/{chain}/{address}', paid: true, pay: ['X-PAYMENT', 'Authorization: Bearer <token>'], description: 'the governance signal from the cached report, or pending while it computes. Built for ten second budgets.' },
       { method: 'POST', path: '/subscribe?credits={n}', paid: true, pay: ['X-PAYMENT'], description: 'buy n report credits, get a bearer token. For runtimes that cannot sign, such as an enclave.' },
       { method: 'GET', path: '/subscription', paid: false, description: 'credits left on a bearer token' },
+      { method: 'POST', path: '/renewals', paid: false, description: 'register a Hedera Scheduled Transaction that pays for credits at expiry; credited when the mirror node shows it executed' },
       { method: 'GET', path: '/resolve/{chain}/{address}', paid: false, description: 'what was pasted: an EOA, a Safe, or a contract and the Safe above it' },
       { method: 'GET', path: '/protocols', paid: false, description: 'the protocol scan: who controls them and what they hold' },
       { method: 'GET', path: '/leaderboard', paid: false, description: 'declared vs effective quorum across a population of Safes' },
@@ -192,6 +194,29 @@ app.post(
     })
   },
 )
+
+/**
+ * Renewals paid by Hedera Scheduled Transactions.
+ *
+ * Free to register: the API issues nothing until the mirror node shows the scheduled transfer
+ * executed and the amount matches the price for that many credits. GET checks and credits.
+ */
+app.post('/renewals', (req, res) => {
+  const { scheduleId, credits, payer, token } = req.body ?? {}
+  if (!scheduleId || !credits) return res.status(400).json({ error: 'scheduleId and credits required' })
+  const n = Math.min(100, Math.max(1, Number(credits)))
+  const q = quote({ signers: 8, txs: 150, chains: 1, permutations: 10_000, count: n })
+  const r = registerRenewal({ scheduleId: String(scheduleId), credits: n, expectedTinybar: q.amount, payTo: x402Config.payTo, payer, token })
+  res.json({ ...r, credits: describe(r.token)?.credits ?? 0, pendingCredits: r.status === 'pending' ? r.credits : 0, check: `/renewals/${r.scheduleId}` })
+})
+
+app.get('/renewals', (_req, res) => res.json({ renewals: listRenewals().map((r) => ({ ...r, token: r.token.slice(0, 7) + '...' })) }))
+
+app.get('/renewals/:scheduleId', async (req, res) => {
+  const r = await checkRenewal(req.params.scheduleId).catch(() => null)
+  if (!r) return res.status(404).json({ error: 'unknown schedule' })
+  res.json({ ...r, token: r.token.slice(0, 7) + '...', creditsNow: describe(r.token)?.credits ?? 0, explorer: `https://hashscan.io/${process.env.HEDERA_NETWORK ?? 'testnet'}/schedule/${r.scheduleId}` })
+})
 
 /** Free: what a token has left. */
 app.get('/subscription', (req, res) => {
@@ -336,6 +361,7 @@ if (!process.env.VERCEL) app.listen(port, () => {
   console.log(`  GET /archive?target=0x...          free - HCS attestation history`)
   console.log(`  GET /signal/:chain/:address      x402 gated - the governance signal, kept warm for enclaves`)
   console.log(`  POST /subscribe?credits=N        x402 gated - prepaid credits as a bearer token`)
+  console.log(`  POST /renewals                   free - credits paid by a Scheduled Transaction, credited on execution`)
   console.log(`  GET /.well-known/x402            free - discovery manifest`)
   if (x402Config.devBypass) console.log(`  ! X402_DEV_BYPASS=1 - payments not enforced`)
 })

@@ -28,7 +28,8 @@
     "build:api": "esbuild apps/api/src/server.ts --bundle --packages=external --platform=node --format=esm --outfile=api/_server.mjs",
     "build": "npm run build:api && npm run build:web",
     "agent:register": "tsx scripts/register-agent.ts",
-    "setup:hts": "tsx scripts/setup-hts.ts"
+    "setup:hts": "tsx scripts/setup-hts.ts",
+    "agent:schedule": "tsx packages/agent/src/schedule.ts"
   },
   "dependencies": {
     "@chainlink/cre-sdk": "^1.19.1",
