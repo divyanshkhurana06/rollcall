@@ -362,7 +362,10 @@ and returns the full breakdown, so an agent can decide before paying.
 (`0.0.10498870`) whose fee schedule the network assesses on every transfer: a 2% fractional fee to
 a collector account, on top, paid by the sender. The client picks; the API checks the accepted offer
 against its own byte for byte before it verifies, so nobody pays the cheaper asset and claims the
-other. `npm run agent -- <safe> ethereum --asset=rcc` is a real token settlement end to end.
+other. `npm run agent -- <safe> ethereum --asset=rcc` is a real token settlement end to end:
+[this one](https://hashscan.io/testnet/transaction/0.0.7162784-1789210131-728434226) moved 162 units
+to the sales account and the network assessed 3 units to the fee collector from the payer, exactly
+as the schedule says.
 
 **Prepaid credits.** `POST /subscribe?credits=N` is x402-gated and returns a bearer token. It exists
 for the runtimes that cannot sign a Hedera transfer per request: the Chainlink workflows run inside

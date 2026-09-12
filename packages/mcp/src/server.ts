@@ -117,20 +117,20 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
   try {
     switch (req.params.name) {
       case 'protocol_exposure': {
-        const address = String((args as any)?.address ?? '')
-        if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return text({ error: 'address must be a 0x-prefixed 20-byte hex address' })
+        const address = String(a.address ?? '')
+        if (!/^0x[0-9a-fA-F]{40}$/.test(address)) return out({ error: 'address must be a 0x-prefixed 20-byte hex address' })
         const exposure = await accountExposure(address)
-        if (!exposure) return text({ error: 'The Graph gateway is not configured (GRAPH_API_KEY)' })
-        return text({
+        if (!exposure) return out({ error: 'The Graph gateway is not configured (GRAPH_API_KEY)' })
+        return out({
           ...exposure,
           provenance: exposure.detail.map((d) => ({ key: d.key, network: d.network, deployment: d.deployment, indexedBlock: d.indexedBlock })),
         })
       }
       case 'standardized_registry': {
-        const family = (args as any)?.family as string | undefined
-        const network = (args as any)?.network as string | undefined
+        const family = a.family as string | undefined
+        const network = a.network as string | undefined
         const deployments = REGISTRY.deployments.filter((d) => (!family || d.family === family) && (!network || d.network === network))
-        return text({
+        return out({
           verifiedAt: REGISTRY.verifiedAt,
           total: REGISTRY.deployments.length,
           matching: deployments.length,
