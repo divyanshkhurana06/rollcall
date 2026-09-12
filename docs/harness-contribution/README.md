@@ -4,6 +4,7 @@
 the environment variables are set.
 
 - Pull request: [hedera-dev/hedera-harness#53](https://github.com/hedera-dev/hedera-harness/pull/53)
+- Video, before and after (3 min): [Google Drive](https://drive.google.com/file/d/1cqjV9rzSAkYKB_b_eQtC0rDgDpGZ_vvM/view?usp=sharing)
 - Branch: `doctor-verify-hedera-credentials` on [the fork](https://github.com/divyanshkhurana06/hedera-harness/tree/doctor-verify-hedera-credentials)
 - Patch: [`doctor-verify-hedera-credentials.patch`](./doctor-verify-hedera-credentials.patch)
 - Evidence: [`before-after.txt`](./before-after.txt)

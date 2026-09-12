@@ -51,6 +51,13 @@ The Graph carries the population: a subgraph of Safe executions and approvals, a
 verified Messari standardized deployments across 12 networks queried with one query string, each
 answer stamped with its provenance.
 
+## Links
+
+- Live: https://rollcall-pi.vercel.app
+- Repo: https://github.com/divyanshkhurana06/rollcall
+- Hedera Harness PR: https://github.com/hedera-dev/hedera-harness/pull/53
+- Harness before/after video (3 min): https://drive.google.com/file/d/1cqjV9rzSAkYKB_b_eQtC0rDgDpGZ_vvM/view?usp=sharing
+
 ## How it's made
 
 The load-bearing primitive is signature recovery. A Safe's execTransaction calldata carries a packed

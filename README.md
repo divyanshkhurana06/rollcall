@@ -418,7 +418,7 @@ account that only exists on mainnet, and a balance below what the run funds.
 [hedera-dev/hedera-harness#53](https://github.com/hedera-dev/hedera-harness/pull/53) makes `doctor`
 verify operator credentials against the mirror node instead of checking that the variables are set.
 Ten tests, no new dependencies, the key is never printed. Write-up and before/after evidence in
-[`docs/harness-contribution/`](docs/harness-contribution/README.md).
+[`docs/harness-contribution/`](docs/harness-contribution/README.md), and [on video](https://drive.google.com/file/d/1cqjV9rzSAkYKB_b_eQtC0rDgDpGZ_vvM/view?usp=sharing).
 
 ### Chainlink - `cre/control-surface-watch/`, `cre/liquidation-protection/`
 
