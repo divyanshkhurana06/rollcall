@@ -12,3 +12,8 @@ cre/*/dist/
 
 # prepaid credit tokens are credentials
 data/subscriptions.json
+
+# built for vercel
+api/_server.mjs
+apps/web/dist/
+.vercel

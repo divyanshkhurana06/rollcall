@@ -1,0 +1,53 @@
+{
+  "registry": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+  "registrations": {
+    "hedera-testnet": {
+      "caip": "eip155:296",
+      "chainId": 296,
+      "agentId": "114",
+      "owner": "0xE339E3E12df4B8Cb04cc42D30E7898dE0475b33B",
+      "tx": "0x68bb740c6f531c9dc6d1a537a1c8d9c6383976e16728a78dcdcfe864ddde6fab",
+      "explorer": "https://hashscan.io/testnet/transaction/0x68bb740c6f531c9dc6d1a537a1c8d9c6383976e16728a78dcdcfe864ddde6fab",
+      "registeredAt": 1789209032
+    },
+    "sepolia": {
+      "caip": "eip155:11155111",
+      "chainId": 11155111,
+      "agentId": "10244",
+      "owner": "0x6c4c6AF01F3Ce02802119407b085EC7475A098E7",
+      "tx": "0x6c0cd8e9e8c82a89c2288c872f9e1dcf26951a12142152ca1bb6fd6b0f08ebe3",
+      "explorer": "https://sepolia.etherscan.io/tx/0x6c0cd8e9e8c82a89c2288c872f9e1dcf26951a12142152ca1bb6fd6b0f08ebe3",
+      "registeredAt": 1789209036
+    }
+  },
+  "card": {
+    "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+    "name": "Roll Call",
+    "description": "Control surface reports for protocol multisigs: who can take everything, how fast, and whether they are still awake. Honest quorum, dark signers, time to harm and value at risk, every number tiered as observed, tested or inferred. Paid per request over x402 on Hedera, or with prepaid credits.",
+    "image": "https://rollcall-pi.vercel.app/favicon.svg",
+    "active": true,
+    "x402Support": true,
+    "supportedTrust": [
+      "reputation"
+    ],
+    "services": [
+      {
+        "name": "x402 API",
+        "endpoint": "https://rollcall-pi.vercel.app/api",
+        "description": "GET /report/{chain}/{address}, priced by work, settled on hedera:testnet"
+      },
+      {
+        "name": "discovery",
+        "endpoint": "https://rollcall-pi.vercel.app/api/.well-known/x402",
+        "description": "every resource, its price, the network, the audit trail"
+      },
+      {
+        "name": "MCP",
+        "endpoint": "stdio: npm run mcp",
+        "description": "who_controls, signer_liveness, independence_test, effective_quorum, method_calibration"
+      }
+    ],
+    "source": "https://github.com/divyanshkhurana06/rollcall"
+  },
+  "agentURI": "data:application/json;base64,eyJ0eXBlIjoiaHR0cHM6Ly9laXBzLmV0aGVyZXVtLm9yZy9FSVBTL2VpcC04MDA0I3JlZ2lzdHJhdGlvbi12MSIsIm5hbWUiOiJSb2xsIENhbGwiLCJkZXNjcmlwdGlvbiI6IkNvbnRyb2wgc3VyZmFjZSByZXBvcnRzIGZvciBwcm90b2NvbCBtdWx0aXNpZ3M6IHdobyBjYW4gdGFrZSBldmVyeXRoaW5nLCBob3cgZmFzdCwgYW5kIHdoZXRoZXIgdGhleSBhcmUgc3RpbGwgYXdha2UuIEhvbmVzdCBxdW9ydW0sIGRhcmsgc2lnbmVycywgdGltZSB0byBoYXJtIGFuZCB2YWx1ZSBhdCByaXNrLCBldmVyeSBudW1iZXIgdGllcmVkIGFzIG9ic2VydmVkLCB0ZXN0ZWQgb3IgaW5mZXJyZWQuIFBhaWQgcGVyIHJlcXVlc3Qgb3ZlciB4NDAyIG9uIEhlZGVyYSwgb3Igd2l0aCBwcmVwYWlkIGNyZWRpdHMuIiwiaW1hZ2UiOiJodHRwczovL3JvbGxjYWxsLXBpLnZlcmNlbC5hcHAvZmF2aWNvbi5zdmciLCJhY3RpdmUiOnRydWUsIng0MDJTdXBwb3J0Ijp0cnVlLCJzdXBwb3J0ZWRUcnVzdCI6WyJyZXB1dGF0aW9uIl0sInNlcnZpY2VzIjpbeyJuYW1lIjoieDQwMiBBUEkiLCJlbmRwb2ludCI6Imh0dHBzOi8vcm9sbGNhbGwtcGkudmVyY2VsLmFwcC9hcGkiLCJkZXNjcmlwdGlvbiI6IkdFVCAvcmVwb3J0L3tjaGFpbn0ve2FkZHJlc3N9LCBwcmljZWQgYnkgd29yaywgc2V0dGxlZCBvbiBoZWRlcmE6dGVzdG5ldCJ9LHsibmFtZSI6ImRpc2NvdmVyeSIsImVuZHBvaW50IjoiaHR0cHM6Ly9yb2xsY2FsbC1waS52ZXJjZWwuYXBwL2FwaS8ud2VsbC1rbm93bi94NDAyIiwiZGVzY3JpcHRpb24iOiJldmVyeSByZXNvdXJjZSwgaXRzIHByaWNlLCB0aGUgbmV0d29yaywgdGhlIGF1ZGl0IHRyYWlsIn0seyJuYW1lIjoiTUNQIiwiZW5kcG9pbnQiOiJzdGRpbzogbnBtIHJ1biBtY3AiLCJkZXNjcmlwdGlvbiI6Indob19jb250cm9scywgc2lnbmVyX2xpdmVuZXNzLCBpbmRlcGVuZGVuY2VfdGVzdCwgZWZmZWN0aXZlX3F1b3J1bSwgbWV0aG9kX2NhbGlicmF0aW9uIn1dLCJzb3VyY2UiOiJodHRwczovL2dpdGh1Yi5jb20vZGl2eWFuc2hraHVyYW5hMDYvcm9sbGNhbGwifQ=="
+}

@@ -13,6 +13,7 @@ import { healthFactor, parseRules } from './liquidation-protection/strategy'
  *   npm run challenge -- status          chain state, our position, and what the workflow would do
  *   npm run challenge -- join            join() plus the two approvals, so the enclave never needs to approve
  *   npm run challenge -- tick [--send]   one cron iteration of the exact enclave code path; --send transacts
+ *   npm run challenge -- guard [--send]  the same tick on a loop, every 30s by default
  *
  * `tick` runs `engine.ts`, the same function the Confidential Workflow runs, over plain fetch instead
  * of the CRE HTTP capability. It exists so the execution path can be exercised end to end against the
@@ -201,13 +202,42 @@ async function runTick(send: boolean) {
 	console.log()
 }
 
+/**
+ * Runs the engine on a loop from this machine. It is the same `tick()` the Confidential Workflow
+ * runs, minus the enclave. It exists for two reasons: to exercise the live execution path before
+ * the organisers' run, and as a disclosed fallback if a CRE deployment is not available in time.
+ * Anything it sends is visible on chain and attributed to the same address the workflow uses.
+ */
+async function guard(intervalSeconds: number, send: boolean) {
+	const pk = requireKey()
+	const rules = requireRules()
+	console.log(`\n${C.b}GUARD${C.x} ${send ? C.y + 'live' : C.d + 'dry run'}${C.x}  every ${intervalSeconds}s, ctrl-c to stop`)
+	for (;;) {
+		const started = Date.now()
+		try {
+			const r = await tick({ transport, fetcher, config: engineConfig(), privateKey: pk, rules, apiKey: process.env.SECRET_ROLLCALL_API_KEY, send })
+			const stamp = new Date().toISOString().slice(11, 19)
+			const plan = r.plan ? `${r.plan.action} deposit=${fmtUnits(r.plan.deposit)} repay=${fmtUnits(r.plan.repay)}` : '-'
+			console.log(`  ${stamp}  price=${fmtUnits(r.price)} hf=${fmtHf(r.hf)} ${r.active ? '' : C.d + '(not active) ' + C.x}${r.state}  ${C.d}${plan}${C.x}${r.txHashes.length ? '  ' + r.txHashes.map((h) => `${ETHERSCAN}/tx/${h}`).join(' ') : ''}`)
+		} catch (e: any) {
+			console.log(`  ${C.r}tick failed: ${e?.message ?? e}${C.x}`)
+		}
+		const wait = Math.max(1000, intervalSeconds * 1000 - (Date.now() - started))
+		await new Promise((r) => setTimeout(r, wait))
+	}
+}
+
 const cmd = process.argv[2] ?? 'status'
 const main = async () => {
 	if (cmd === 'keygen') return keygen()
 	if (cmd === 'status') return status()
 	if (cmd === 'join') return join()
 	if (cmd === 'tick') return runTick(process.argv.includes('--send'))
-	console.error(`unknown command ${cmd}. One of: keygen, status, join, tick [--send]`)
+	if (cmd === 'guard') {
+		const every = Number((process.argv.find((a) => a.startsWith('--every=')) ?? '--every=30').split('=')[1])
+		return guard(every, process.argv.includes('--send'))
+	}
+	console.error(`unknown command ${cmd}. One of: keygen, status, join, tick [--send], guard [--send] [--every=30]`)
 	process.exit(1)
 }
 main().catch((e) => {

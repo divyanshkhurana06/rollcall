@@ -23,7 +23,9 @@ export interface Subscription {
   lastUsedAt?: number
 }
 
-const FILE = process.env.SUBSCRIPTIONS_FILE ?? 'data/subscriptions.json'
+// Serverless hosts have a read-only project directory, so the file lives in /tmp there and credits
+// bought on one instance can be re-seeded from ROLLCALL_TOKENS ("token:credits,token:credits").
+const FILE = process.env.SUBSCRIPTIONS_FILE ?? (process.env.VERCEL ? '/tmp/subscriptions.json' : 'data/subscriptions.json')
 const store = new Map<string, Subscription>()
 
 try {
@@ -31,10 +33,18 @@ try {
 } catch {
   /* start empty rather than refuse to start */
 }
+for (const entry of (process.env.ROLLCALL_TOKENS ?? '').split(',').map((e) => e.trim()).filter(Boolean)) {
+  const [token, credits] = entry.split(':')
+  if (token && !store.has(token)) store.set(token, { token, credits: Number(credits ?? 0), issued: Number(credits ?? 0), issuedAt: 0 })
+}
 
 function persist() {
-  mkdirSync('data', { recursive: true })
-  writeFileSync(FILE, JSON.stringify([...store.values()], null, 2))
+  try {
+    mkdirSync(FILE.slice(0, FILE.lastIndexOf('/')) || '.', { recursive: true })
+    writeFileSync(FILE, JSON.stringify([...store.values()], null, 2))
+  } catch {
+    /* in-memory only; the seed covers restarts */
+  }
 }
 
 export function issue(credits: number, meta: { payer?: string; transaction?: string }): Subscription {

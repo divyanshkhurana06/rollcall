@@ -1,0 +1,10 @@
+cre
+subgraph
+substreams
+docs
+node_modules
+.env
+.env.*
+!.env.example
+data/subscriptions.json
+data/last-report.json

@@ -1,6 +1,6 @@
 {
   "schedule": "0 */1 * * * *",
-  "rollcallApiUrl": "https://84f8-136-233-9-115.ngrok-free.app",
+  "rollcallApiUrl": "https://rollcall-pi.vercel.app/api",
   "apiKeySecretId": "ROLLCALL_API_KEY",
   "watchlistSecretId": "ROLLCALL_WATCHLIST"
 }

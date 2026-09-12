@@ -4,7 +4,7 @@
   "lendingAddress": "0x88574e7Cc0027afd04951daa09B64d4441931ba1",
   "vethAddress": "0x5dED1a40c3D56dA42E7f932f781c0432556c9814",
   "vusdAddress": "0x6Fe92Ead5299040f50F095860b5A0A7A2D4041A2",
-  "rollcallApiUrl": "https://84f8-136-233-9-115.ngrok-free.app",
+  "rollcallApiUrl": "https://rollcall-pi.vercel.app/api",
   "market": "0x4426f7eAA169aa9B84E665CA0f28B75EC24c1ca2",
   "privateKeySecretId": "CHALLENGE_PRIVATE_KEY",
   "rulesSecretId": "PROTECTION_RULES",

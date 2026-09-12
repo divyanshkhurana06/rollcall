@@ -146,7 +146,7 @@ export default function App() {
 
             {r && (
               <div className="fade">
-                <Headline r={r} />
+                <Headline r={r} since={data?.since} />
                 <div className="cols">
                   <div>
                     <Liveness r={r} />
@@ -361,13 +361,37 @@ function Board({ onInspect, health }: { onInspect: (a: string) => void; health: 
 }
 
 /* ============================ report ============================ */
-function Headline({ r }: any) {
+const LABEL: Record<string, string> = {
+  darkSigners: 'signers dark', liveSigners: 'signers live', effectiveQuorumMin: 'honest quorum', effectiveQuorumMax: 'honest quorum (max)',
+  canReachThreshold: 'can reach quorum', threshold: 'declared threshold', owners: 'owners', dependentPairs: 'dependent pairs',
+}
+const ago = (s: number) => (s < 3600 ? `${Math.max(1, Math.round(s / 60))} min` : s < 86400 ? `${Math.round(s / 3600)} h` : `${Math.round(s / 86400)} d`)
+
+/** The archive's first derivative: what moved between the previous attestation and this one. */
+function Since({ since }: any) {
+  if (!since) return null
+  return (
+    <div className="since-line">
+      <span className="lbl">since the previous attestation ({ago(since.span)} earlier)</span>
+      {since.changes.length === 0 ? (
+        <span className="note">no change in the control surface</span>
+      ) : (
+        since.changes.map((c: any) => (
+          <span key={c.metric} className="delta">{LABEL[c.metric] ?? c.metric} {String(c.from)} → {String(c.to)}</span>
+        ))
+      )}
+    </div>
+  )
+}
+
+function Headline({ r, since }: any) {
   const R = r.reachability
   const eq = Math.min(...r.inferred.quorumCurve.map((c: any) => c.effectiveQuorum))
   const dep = r.tested.independence.filter((p: any) => p.pValue < 0.01 && p.excess > 0).length
   const cls = (crit: boolean, warn: boolean) => (crit ? 'crit' : warn ? 'warn' : 'ok')
   return (
     <div className="sec">
+      <Since since={since} />
       <div className="panel"><div className="headline">
         <div className="stat"><div className="k">Declared threshold</div>
           <div className="v">{r.observed.threshold} of {r.observed.owners.length}</div>

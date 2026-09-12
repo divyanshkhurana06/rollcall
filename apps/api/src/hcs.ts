@@ -133,3 +133,31 @@ export async function readArchive(target?: string, limit = 50) {
     return { available: false, messages: [], reason: e?.message }
   }
 }
+
+/**
+ * What changed since the previous attestation of the same target. The archive is a time series;
+ * this is the first derivative. "Dark signers 1 -> 2 since 10 September" is the sentence the
+ * archive exists to make provable.
+ */
+export type MetricDelta = { metric: string; from: number | boolean; to: number | boolean }
+export interface AttestationDelta {
+  target: string
+  latestAt: number
+  previousAt: number
+  /** Seconds between the two attestations. */
+  span: number
+  changes: MetricDelta[]
+}
+
+export async function attestationDelta(target: string): Promise<AttestationDelta | null> {
+  const archive = await readArchive(target, 50)
+  const rows = (archive.messages as any[]).filter((m) => m?.metrics && typeof m.at === 'number').sort((a, b) => b.at - a.at)
+  if (rows.length < 2) return null
+  const [latest, previous] = rows
+  const keys = ['threshold', 'owners', 'darkSigners', 'liveSigners', 'canReachThreshold', 'effectiveQuorumMin', 'effectiveQuorumMax', 'dependentPairs']
+  const changes: MetricDelta[] = []
+  for (const k of keys) {
+    if (latest.metrics[k] !== previous.metrics[k]) changes.push({ metric: k, from: previous.metrics[k], to: latest.metrics[k] })
+  }
+  return { target, latestAt: latest.at, previousAt: previous.at, span: latest.at - previous.at, changes }
+}

@@ -301,3 +301,7 @@ code { font-family: var(--mono); font-size: .92em; color: var(--ink-2); }
 }
 .tokin:focus { border-color: #33343a; background: var(--panel-2); }
 .tokin::placeholder { color: var(--ink-4); }
+
+.since-line { display: flex; flex-wrap: wrap; gap: 10px; align-items: baseline; margin: 0 0 10px 2px; font-size: 12.5px; }
+.since-line .lbl { color: var(--ink-3); }
+.since-line .delta { font-family: var(--mono); color: var(--warn); background: var(--panel); border: 1px solid var(--line); padding: 3px 8px; border-radius: var(--r); }
