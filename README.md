@@ -190,16 +190,23 @@ resolves who can change it, and measures whether that signer set is as large as 
 
 ```
   protocol         role          value      declared  honest  dark  margin  hidden
-  Base             L1 Portal     $1.87B     2/2       2       0     0       0
+  Base             L1 Portal     $1.92B     2/2       2       0     0       0
+  Mantle           L1 Portal     $409M      6/14      2       7     1       8
   World Chain      L1 Portal     $16M       5/8       4       1     2       1
-  BOB              L1 Portal     $1M        4/6       2       2     0       0
-  Lisk             L1 Portal     $1M        1/1       1       1     -1      1
-  Swan Chain       L1 Portal     $93K       3/4       3       4     -3      0
+  Zircuit          L1 Portal     $2M        4/11      1       2     5       1
+  Metis            L1 Bridge     $1M        6/8       6       8     -6      1
+  Lisk             L1 Portal     $1M        1/1       1       1     -1      0
 ```
 
-**$3.82B across 31 contracts. $1.88B of it sits behind a signer set with zero margin** - one lost
-key and that contract can never be upgraded again. Two chains show a negative margin, meaning that
-on the evidence searched the signers still showing activity cannot reach threshold at all.
+**$4.36B across 46 contracts, 29 of them with a Safe in the authority path. $1.93B sits behind a
+signer set with zero margin** - one lost key and that contract can never be upgraded again. **$430M
+sits behind a Safe whose honest quorum is below its declared threshold**: Mantle declares 6 of 14,
+resolves to an honest quorum of 2, and 7 of its 14 signers have shown no onchain signal in 180
+days. Three chains show a negative margin, meaning that on the evidence searched the signers still
+showing activity cannot reach threshold at all.
+
+Value is read at the contract itself. OP Stack chains that moved their ETH into the shared
+`ETHLockbox` show it there, not at the portal, which is why the lockbox is a target of its own.
 
 OP Stack addresses come from Optimism's own `superchain-registry`, so they are verifiable rather
 than curated here. Every address is re-verified at scan time: it must have code, its authority must

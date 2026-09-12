@@ -80,4 +80,5 @@ export const PROTOCOLS: ProtocolTarget[] = [
   { protocol: 'Arbitrum One', role: 'Inbox', address: '0x4Dbd4fc535Ac27206064B68FfCf827b0A60BAB3f', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
   { protocol: 'zkSync Era', role: 'L1 ERC20 Bridge', address: '0x57891966931Eb4Bb6FB81430E6cE0A03AAbDe063', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
 
+  { protocol: 'OP Mainnet', role: 'ETH Lockbox', address: '0x322b47Ff1FA8D5611F761e3E275C45B71b294D43', category: 'bridge', source: 'l2beat/l2beat config (discovered.json)' },
 ]
