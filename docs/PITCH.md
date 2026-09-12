@@ -54,6 +54,14 @@ service that gives every report a timestamp nobody can backdate.
 selector, proven by reading its dispatch table. The CRE simulator: it was the Bun version, found
 and fixed on the last day; deployment access is pending. Both are written up, not hidden.
 
+**What is the revenue model?** It already charges. Reports are priced per report by the work they
+take and paid over x402, so an agent can buy one without an account. Institutions buy a watch: every
+protocol they are exposed to, re-measured and attested daily, alert on change, priced per protocol
+per month. The archive is licensed to insurers and forensics after incidents, because "on this date
+these keys had been dark for 300 days" cannot be reconstructed later. Revenue today is zero, testnet;
+the metering, settlement, credits and archive are the plumbing revenue needs. L2Beat publishes who
+holds the keys as a public good; Roll Call sells whether the keys still work.
+
 **Who is the user?** Anyone about to put money behind a protocol, and anyone who insures them.
 Before you deposit, is the pause key held by someone awake?
 
