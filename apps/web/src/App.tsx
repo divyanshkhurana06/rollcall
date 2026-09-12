@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Component, type ReactNode } from 'react'
 
 // Behind the vite proxy in development; a full origin (VITE_API_BASE) when deployed statically.
 const API: string = (import.meta as any).env?.VITE_API_BASE ?? '/api'
@@ -13,6 +13,16 @@ function usd(n: number | null): string {
   if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`
   if (n >= 1e6) return `$${(n / 1e6).toFixed(0)}M`
   return `$${n.toFixed(0)}`
+}
+
+/** A failing panel must never take the page with it. */
+class Boundary extends Component<{ children: ReactNode; label: string }, { error: string | null }> {
+  state = { error: null as string | null }
+  static getDerivedStateFromError(e: any) { return { error: e?.message ?? String(e) } }
+  render() {
+    if (this.state.error) return <div className="panel err pad" style={{ marginTop: 14 }}>this section could not be drawn ({this.props.label}): {this.state.error}</div>
+    return this.props.children
+  }
 }
 
 const SAMPLES = [
@@ -76,7 +86,7 @@ export default function App() {
         const body = await res.json()
         if (!res.ok) throw new Error(body.error ?? `the service could not pay for this report (${res.status})`)
         setAgentRun(body)
-        setData({ report: body.report, since: body.since, narrative: body.narrative, context: body.context, settlement: body.settlement, receipt: body.receipt })
+        setData({ report: body.report, since: body.since, narrative: body.narrative, context: body.context, settlement: body.settlement, quote: body.quote, attestation: body.attestation, receipt: body.receipt })
         return
       }
 
@@ -99,7 +109,7 @@ export default function App() {
       const body = await res.json()
       if (!res.ok) throw new Error(body.error ?? `agent failed (${res.status})`)
       setAgentRun(body)
-      if (body.report) { setData({ report: body.report, since: body.since, narrative: body.narrative, context: body.context, settlement: body.settlement, receipt: body.receipt }); setResolution((prev: any) => prev?.holders ? prev : { kind: 'safe', safe: addr, message: 'paid for by the demo agent' }) }
+      if (body.report) { setData({ report: body.report, since: body.since, narrative: body.narrative, context: body.context, settlement: body.settlement, quote: body.quote, attestation: body.attestation, receipt: body.receipt }); setResolution((prev: any) => prev?.holders ? prev : { kind: 'safe', safe: addr, message: 'paid for by the demo agent' }) }
     } catch (e: any) { setErr(e.message ?? String(e)) }
     finally { setAgentBusy(false); setStep('') }
   }
@@ -128,9 +138,9 @@ export default function App() {
         {view === 'protocols' && <Protocols onInspect={(a) => { setAddr(a); run(a) }} />}
         {view === 'board' && <Board onInspect={(a) => { setAddr(a); run(a) }} health={health} />}
 
-        {view === 'protocols' && <Changes />}
+        {view === 'protocols' && <Boundary label="recent attestations"><Changes /></Boundary>}
         {view === 'ask' && <Ask onReport={(d: any) => { setData(d); setAddr(d.report?.target?.address ?? addr); setResolution(d.resolution ?? { kind: 'safe', safe: d.report?.target?.address, message: 'paid for by the agent' }); setView('report') }} />}
-        {view === 'challenge' && <Challenge />}
+        {view === 'challenge' && <Boundary label="enclave"><Challenge /></Boundary>}
         {view === 'report' && (
           <>
             <div style={{ height: 26 }} />
@@ -195,21 +205,21 @@ export default function App() {
 
             {r && (
               <div className="fade">
-                <AttackPath resolution={resolution} r={r} context={data?.context} />
-                <Headline r={r} since={data?.since} narrative={data?.narrative} />
+                <Boundary label="path"><AttackPath resolution={resolution} r={r} context={data?.context} /></Boundary>
+                <Boundary label="headline"><Headline r={r} since={data?.since} narrative={data?.narrative} /></Boundary>
                 <div className="cols">
                   <div>
-                    <Liveness r={r} />
+                    <Boundary label="liveness"><Liveness r={r} /></Boundary>
                   </div>
                   <div>
-                    <Exposure r={r} />
+                    <Boundary label="exposure"><Exposure r={r} /></Boundary>
                   </div>
                 </div>
-                <Participation r={r} />
-                <Independence r={r} />
-                <Quorum r={r} />
+                <Boundary label="participation"><Participation r={r} /></Boundary>
+                <Boundary label="independence"><Independence r={r} /></Boundary>
+                <Boundary label="quorum"><Quorum r={r} /></Boundary>
                 <Findings r={r} />
-                <Settlement data={data} />
+                <Boundary label="settlement"><Settlement data={data} /></Boundary>
                 <Method r={r} calib={calib} />
               </div>
             )}
@@ -742,21 +752,23 @@ function Findings({ r }: any) {
 }
 
 function Settlement({ data }: any) {
-  const s = data.settlement, q = data.quote, rec = data.receipt, att = data.attestation
+  const s = data?.settlement, q = data?.quote, rec = data?.receipt, att = data?.attestation
+  if (!s && !q && !rec) return null
+  const paidIn = s ? (s.asset === '0.0.0' || !s.asset ? `${s.hbar ?? q?.hbar ?? '?'} HBAR` : `${s.amount} units of ${s.asset}`) : q ? `${q.hbar ?? q.amount} HBAR` : '?'
   return (
     <div className="sec">
       <div className="sec-head"><div className="sec-title" style={{ color: 'var(--ink-2)' }}>Settlement and archive</div>
         <div className="sec-sub">metered by work, attested to Hedera Consensus Service</div></div>
       <div className="panel pad">
         <div className="kv">
-          <div className="k">price</div><div className="v">{q.hbar ?? q.amount} HBAR on {q.network}{s?.mode ? ` (${s.mode})` : ''}</div>
-          <div className="k">priced by</div><div className="v">{q.units.pairs} signer pairs, {q.units.txs} transactions, {q.units.chains} chain(s)</div>
+          <div className="k">price</div><div className="v">{paidIn} on {s?.network ?? q?.network ?? 'hedera:testnet'}{s?.mode ? ` (${s.mode})` : ''}</div>
+          {q?.units && <><div className="k">priced by</div><div className="v">{q.units.pairs} signer pairs, {q.units.txs} transactions, {q.units.chains} chain(s)</div></>}
           {s?.transaction && <><div className="k">settlement tx</div>
             <div className="v"><a href={s.explorer} target="_blank" rel="noreferrer">{s.transaction}</a></div></>}
-          <div className="k">attestation</div><div className="v">{att.bodyHash}</div>
-          <div className="k">hcs</div><div className="v">{rec.submitted
+          {att?.bodyHash && <><div className="k">attestation</div><div className="v">{att.bodyHash}</div></>}
+          {rec && <><div className="k">hcs</div><div className="v">{rec.submitted
             ? <a href={rec.explorer} target="_blank" rel="noreferrer">topic {rec.topicId}, sequence {rec.sequenceNumber}</a>
-            : <span style={{ color: 'var(--ink-4)' }}>not submitted - {rec.reason}</span>}</div>
+            : <span style={{ color: 'var(--ink-4)' }}>not submitted - {rec.reason}</span>}</div></>}
         </div>
         <p className="note" style={{ marginTop: 12 }}>
           Anyone can recompute today's answer. Nobody else has last year's. Each report emits a timestamped

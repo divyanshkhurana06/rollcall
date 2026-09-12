@@ -359,6 +359,8 @@ app.post('/demo/agent', async (req, res) => {
       headerBytes: result.headerBytes,
       ms: result.ms,
       settlement: b.settlement ?? null,
+      quote: b.quote ?? null,
+      attestation: b.attestation ?? null,
       receipt: b.receipt ?? null,
       since: b.since ?? null,
       narrative: b.narrative ?? null,
